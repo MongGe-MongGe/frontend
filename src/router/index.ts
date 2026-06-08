@@ -1,10 +1,64 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import LoginView from '../views/LoginView.vue'
+import SignupView from '../views/SignupView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // Add your routes here
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: SignupView,
+    },
+    {
+      path: '/map',
+      name: 'map',
+      component: () => import('../views/MapView.vue'),
+    },
+    {
+      path: '/',
+      name: 'main',
+      component: () => import('../views/MainView.vue'),
+    },
+    {
+      path: '/explore',
+      name: 'explore',
+      component: () => import('../views/ExploreView.vue'),
+    },
+    {
+      path: '/user',
+      name: 'user',
+      component: () => import('../views/UserView.vue'),
+    },
+    {
+      path: '/place/:id',
+      name: 'restaurant-detail',
+      component: () => import('../views/RestaurantDetailView.vue'),
+    },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const publicPages = ['/login', '/signup']
+  const authRequired = !publicPages.includes(to.path)
+
+  // 로그인이 필요한 페이지인데 토큰이 없는 경우 로그인 페이지로 리다이렉트
+  if (authRequired && !authStore.token) {
+    next({ name: 'login' })
+  }
+  // 이미 로그인한 상태에서 로그인/회원가입 페이지 접근 시 메인으로 리다이렉트
+  else if (!authRequired && authStore.token) {
+    next({ name: 'main' })
+  } else {
+    next()
+  }
 })
 
 export default router
