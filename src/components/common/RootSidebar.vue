@@ -132,7 +132,8 @@
 
         <!-- 마이 페이지 버튼 -->
         <router-link
-          to="/user"
+          v-if="authStore.user?.handle"
+          :to="`/users/${authStore.user.handle}`"
           class="flex items-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors overflow-hidden h-12"
           active-class="bg-blue-50 text-primary font-bold"
         >
