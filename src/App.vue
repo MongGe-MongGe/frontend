@@ -4,8 +4,8 @@
 
     <!-- Main Content Area -->
     <main class="w-full h-full relative bg-white overflow-hidden flex justify-center">
-      <!-- Full width for Map -->
-      <div v-if="isMapRoute" class="w-full h-full relative">
+      <!-- Full width for Map and Error pages -->
+      <div v-if="isFullWidthRoute" class="w-full h-full relative overflow-y-auto no-scrollbar">
         <router-view />
       </div>
 
@@ -26,9 +26,9 @@ import { useRoute } from 'vue-router'
 import RootSidebar from './components/common/RootSidebar.vue'
 
 const route = useRoute()
-const isMapRoute = computed(() => route.path === '/map')
+const isFullWidthRoute = computed(() => ['map', 'not-found', 'forbidden', 'catch-all'].includes(route.name as string))
 const showSidebar = computed(
-  () => route.name !== 'login' && route.name !== 'signup' && route.name !== 'map',
+  () => !['login', 'signup', 'map', 'not-found', 'forbidden', 'catch-all'].includes(route.name as string),
 )
 </script>
 

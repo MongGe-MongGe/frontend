@@ -32,14 +32,39 @@ const router = createRouter({
       component: () => import('../views/ExploreView.vue'),
     },
     {
-      path: '/user',
-      name: 'user',
+      path: '/users/:handle',
+      name: 'user-profile',
       component: () => import('../views/UserView.vue'),
     },
     {
       path: '/place/:id',
       name: 'restaurant-detail',
       component: () => import('../views/RestaurantDetailView.vue'),
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsView.vue'),
+    },
+    {
+      path: '/settings/profile',
+      name: 'profile-edit',
+      component: () => import('../views/ProfileEditView.vue'),
+    },
+    {
+      path: '/404',
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue'),
+    },
+    {
+      path: '/403',
+      name: 'forbidden',
+      component: () => import('../views/ForbiddenView.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'catch-all',
+      redirect: '/404'
     },
   ],
 })
@@ -49,9 +74,14 @@ router.beforeEach((to, from, next) => {
   const publicPages = ['/login', '/signup']
   const authRequired = !publicPages.includes(to.path)
 
-  // 로그인이 필요한 페이지인데 토큰이 없는 경우 로그인 페이지로 리다이렉트
+  // 로그인이 필요한 페이지인데 토큰이 없는 경우
   if (authRequired && !authStore.token) {
-    next({ name: 'login' })
+    // 설정 페이지(및 하위 페이지)로 접근하는 경우 권한 없음(403) 페이지로 이동
+    if (to.path.startsWith('/settings')) {
+      next({ name: 'forbidden' })
+    } else {
+      next({ name: 'login' })
+    }
   }
   // 이미 로그인한 상태에서 로그인/회원가입 페이지 접근 시 메인으로 리다이렉트
   else if (!authRequired && authStore.token) {
