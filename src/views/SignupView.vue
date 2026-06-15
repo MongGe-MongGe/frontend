@@ -42,7 +42,7 @@
                 required
                 v-model="form.handle"
                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                placeholder="고유 아이디 (영문/숫자 6~20자)"
+                placeholder="고유 아이디 (영문/숫자 4~20자)"
               />
             </div>
           </div>
