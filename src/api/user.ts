@@ -32,3 +32,28 @@ export const getUserProfile = async (handle: string) => {
   const response = await apiClient.get(`/users/${encodeURIComponent(handle)}`)
   return response.data
 }
+
+export const searchUsers = async (keyword: string) => {
+  const response = await apiClient.get(`/users?keyword=${encodeURIComponent(keyword)}`)
+  return response.data // List of UserProfileResponse
+}
+
+export const getFollowings = async (userId: string) => {
+  const response = await apiClient.get(`/users/${encodeURIComponent(userId)}/followings`)
+  return response.data
+}
+
+export const getFollowers = async (userId: string) => {
+  const response = await apiClient.get(`/users/${encodeURIComponent(userId)}/followers`)
+  return response.data
+}
+
+export const followUser = async (userId: string) => {
+  const response = await apiClient.post(`/users/follow/${encodeURIComponent(userId)}`)
+  return response.data
+}
+
+export const unfollowUser = async (userId: string) => {
+  const response = await apiClient.delete(`/users/follow/${encodeURIComponent(userId)}`)
+  return response.data
+}
