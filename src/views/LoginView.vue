@@ -104,6 +104,7 @@ const handleLogin = async () => {
       email: data.email,
       handle: data.handle,
       profileImage: data.profileImage,
+      role: data.role,
     })
 
     router.push('/')

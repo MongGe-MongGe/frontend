@@ -103,6 +103,28 @@
           >지도</span
         >
       </router-link>
+
+      <router-link
+        to="/board"
+        class="flex items-center rounded-xl text-gray-600 hover:bg-blue-50 hover:text-primary transition-colors overflow-hidden h-12"
+        active-class="bg-blue-50 text-primary font-bold"
+      >
+        <div class="w-16 shrink-0 flex justify-center items-center h-full">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+            ></path>
+          </svg>
+        </div>
+        <span
+          class="whitespace-nowrap transition-opacity duration-300"
+          :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+          >게시판</span
+        >
+      </router-link>
     </nav>
 
     <!-- Bottom Auth links -->
@@ -159,10 +181,15 @@
             </div>
           </div>
           <span
-            class="whitespace-nowrap font-medium transition-opacity duration-300"
+            class="whitespace-nowrap font-medium transition-opacity duration-300 flex items-center gap-1"
             :class="isExpanded ? 'opacity-100' : 'opacity-0'"
-            >마이 페이지</span
           >
+            마이 페이지
+            <Crown
+              v-if="authStore.user?.role?.includes('ADMIN')"
+              class="w-4 h-4 text-yellow-500 fill-yellow-500"
+            />
+          </span>
         </router-link>
       </template>
 
@@ -197,6 +224,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { Crown } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const router = useRouter()
