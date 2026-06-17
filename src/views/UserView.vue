@@ -25,26 +25,39 @@
 
     <div class="p-4">
       <div class="flex items-center space-x-6 mb-6">
-        <img v-if="user?.profileImage" :src="user.profileImage" class="w-20 h-20 bg-gray-200 rounded-full shrink-0 object-cover" alt="프로필 이미지">
+        <img
+          v-if="user?.profileImage"
+          :src="user.profileImage"
+          class="w-20 h-20 bg-gray-200 rounded-full shrink-0 object-cover"
+          alt="프로필 이미지"
+        />
         <div v-else class="w-20 h-20 bg-gray-200 rounded-full shrink-0"></div>
         <div class="flex-1 flex justify-between text-center">
           <div>
             <div class="font-bold text-lg">12</div>
             <div class="text-xs text-gray-500">리뷰</div>
           </div>
-          <div>
-            <div class="font-bold text-lg">342</div>
+          <div
+            class="cursor-pointer hover:opacity-70 transition"
+            @click="openFollowModal('followers')"
+          >
+            <div class="font-bold text-lg">{{ user?.followerCount || 0 }}</div>
             <div class="text-xs text-gray-500">팔로워</div>
           </div>
-          <div>
-            <div class="font-bold text-lg">150</div>
+          <div
+            class="cursor-pointer hover:opacity-70 transition"
+            @click="openFollowModal('followings')"
+          >
+            <div class="font-bold text-lg">{{ user?.followingCount || 0 }}</div>
             <div class="text-xs text-gray-500">팔로잉</div>
           </div>
         </div>
       </div>
       <div class="mb-6">
         <h2 class="font-bold text-gray-900">{{ user?.nickname || '유저명' }}</h2>
-        <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ (user as any)?.bio || '자기소개가 없습니다.' }}</p>
+        <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">
+          {{ user?.bio || '자기소개가 없습니다.' }}
+        </p>
       </div>
 
       <div v-if="isMyProfile" class="flex space-x-2 mb-6">
@@ -62,9 +75,15 @@
       </div>
       <div v-else class="flex space-x-2 mb-6">
         <button
-          class="flex-1 bg-blue-600 text-white py-1.5 rounded font-bold text-sm hover:bg-blue-700 transition"
+          @click="toggleFollow"
+          :class="[
+            'flex-1 py-1.5 rounded font-bold text-sm transition',
+            user?.isFollowing
+              ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              : 'bg-blue-600 text-white hover:bg-blue-700',
+          ]"
         >
-          팔로우
+          {{ user?.isFollowing ? '팔로잉' : user?.isFollower ? '맞팔로우' : '팔로우' }}
         </button>
       </div>
     </div>
@@ -83,6 +102,14 @@
     <div class="grid grid-cols-3 gap-1">
       <div v-for="i in 9" :key="i" class="aspect-square bg-gray-300"></div>
     </div>
+
+    <!-- Follow List Modal -->
+    <FollowListModal
+      :is-open="isModalOpen"
+      :type="modalType"
+      :user-id="user?.id"
+      @close="isModalOpen = false"
+    />
   </PageContainer>
 </template>
 
@@ -90,26 +117,71 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getUserProfile } from '@/api/user'
+import { getUserProfile, followUser, unfollowUser } from '@/api/user'
 import PageContainer from '@/components/common/PageContainer.vue'
+import FollowListModal from '@/components/user/FollowListModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-const user = ref<any>(null)
+interface UserProfile {
+  id: string
+  nickname: string
+  handle: string
+  profileImage?: string
+  bio?: string
+  followerCount: number
+  followingCount: number
+  isFollowing: boolean
+  isFollower: boolean
+}
+
+const user = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 
 const isMyProfile = computed(() => {
   return authStore.user?.handle === user.value?.handle
 })
 
+const isModalOpen = ref(false)
+const modalType = ref<'followers' | 'followings'>('followers')
+
+const openFollowModal = (type: 'followers' | 'followings') => {
+  if (!user.value) return
+  modalType.value = type
+  isModalOpen.value = true
+}
+
+const toggleFollow = async () => {
+  if (!authStore.isAuthenticated) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+
+  try {
+    if (user.value.isFollowing) {
+      await unfollowUser(user.value.id)
+      user.value.isFollowing = false
+      user.value.followerCount--
+    } else {
+      await followUser(user.value.id)
+      user.value.isFollowing = true
+      user.value.followerCount++
+    }
+  } catch (error) {
+    console.error('Follow toggle error:', error)
+    alert('팔로우 상태를 변경할 수 없습니다.')
+  }
+}
+
 const loadProfile = async () => {
   try {
     isLoading.value = true
-    const handle = route.params.handle as string
+    const rawHandle = route.params.handle as string
+    const handle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`
     user.value = await getUserProfile(handle)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to load user profile:', error)
     user.value = null
     // 유저를 찾을 수 없는 경우 (404 상태 코드인 경우)
