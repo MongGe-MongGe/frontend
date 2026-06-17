@@ -52,6 +52,16 @@ const router = createRouter({
       component: () => import('../views/ProfileEditView.vue'),
     },
     {
+      path: '/board',
+      name: 'board',
+      component: () => import('../views/BoardView.vue'),
+    },
+    {
+      path: '/board/create',
+      name: 'board-create',
+      component: () => import('../views/BoardCreateView.vue'),
+    },
+    {
       path: '/404',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
@@ -64,7 +74,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'catch-all',
-      redirect: '/404'
+      redirect: '/404',
     },
   ],
 })
@@ -82,6 +92,10 @@ router.beforeEach((to, from, next) => {
     } else {
       next({ name: 'login' })
     }
+  }
+  // 관리자 권한이 필요한 페이지 접근 제어
+  else if (to.path.startsWith('/board/create') && authStore.user?.role !== 'ADMIN') {
+    next({ name: 'forbidden' })
   }
   // 이미 로그인한 상태에서 로그인/회원가입 페이지 접근 시 메인으로 리다이렉트
   else if (!authRequired && authStore.token) {
