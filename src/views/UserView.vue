@@ -102,14 +102,6 @@
     <div class="grid grid-cols-3 gap-1">
       <div v-for="i in 9" :key="i" class="aspect-square bg-gray-300"></div>
     </div>
-
-    <!-- Follow List Modal -->
-    <FollowListModal
-      :is-open="isModalOpen"
-      :type="modalType"
-      :user-id="user?.id"
-      @close="isModalOpen = false"
-    />
   </PageContainer>
 </template>
 
@@ -119,7 +111,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getUserProfile, followUser, unfollowUser } from '@/api/user'
 import PageContainer from '@/components/common/PageContainer.vue'
-import FollowListModal from '@/components/user/FollowListModal.vue'
 
 const route = useRoute()
 const router = useRouter()
