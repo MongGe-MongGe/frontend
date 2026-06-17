@@ -1,10 +1,12 @@
 <template>
   <PageContainer>
-    <div class="bg-white p-4 sticky top-0 z-10 shadow-sm">
+    <div class="bg-white p-4 sticky top-0 z-10 shadow-sm border-b border-gray-100">
       <div class="relative">
         <input
+          v-model="keyword"
+          @keyup.enter="performSearch"
           type="text"
-          class="w-full bg-gray-100 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary"
+          class="w-full bg-gray-100 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary transition"
           placeholder="유저나 식당을 검색해보세요"
         />
         <svg
@@ -21,9 +23,50 @@
           ></path>
         </svg>
       </div>
+
+      <!-- Search Tabs -->
+      <div class="flex mt-4">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          class="flex-1 pb-2 text-center text-sm font-bold transition-colors"
+          :class="
+            activeTab === tab.id
+              ? 'border-b-2 border-gray-900 text-gray-900'
+              : 'text-gray-400 border-b-2 border-transparent'
+          "
+        >
+          {{ tab.name }}
+        </button>
+      </div>
     </div>
 
-    <div class="p-4">
+    <!-- User Search Results -->
+    <div v-if="activeTab === 'users'">
+      <div v-if="isLoading && users.length === 0" class="flex justify-center p-10">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+      <div v-else-if="users.length === 0 && hasSearched" class="text-center p-10 text-gray-500">
+        검색 결과가 없습니다.
+      </div>
+      <div v-else class="divide-y divide-gray-100">
+        <UserListItem v-for="user in users" :key="user.id" :user="user" />
+        <div v-if="users.length > 0 && !hasReachedEnd" class="py-4 flex justify-center">
+          <button
+            @click="loadMore"
+            :disabled="isLoadingMore"
+            class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-bold rounded-full transition disabled:opacity-50"
+          >
+            <span v-if="isLoadingMore">로딩중...</span>
+            <span v-else>더보기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Default Explore Content -->
+    <div v-else class="p-4">
       <!-- Event Banner -->
       <div
         class="bg-gradient-to-r from-blue-400 to-primary rounded-xl p-6 text-white shadow-md mb-6"
@@ -79,5 +122,71 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import PageContainer from '@/components/common/PageContainer.vue'
+import UserListItem from '@/components/user/UserListItem.vue'
+import { searchUsers } from '@/api/user'
+
+const tabs = [
+  { id: 'users', name: '유저' },
+  { id: 'reviews', name: '리뷰' },
+  { id: 'places', name: '장소' },
+]
+
+const activeTab = ref('users')
+const keyword = ref('')
+const users = ref<Record<string, unknown>[]>([])
+const isLoading = ref(false)
+const isLoadingMore = ref(false)
+const hasSearched = ref(false)
+const offset = ref(0)
+const limit = 20
+const hasReachedEnd = ref(false)
+
+const performSearch = async () => {
+  if (activeTab.value !== 'users' || !keyword.value.trim()) return
+
+  isLoading.value = true
+  hasSearched.value = true
+  offset.value = 0
+  hasReachedEnd.value = false
+
+  try {
+    const results = await searchUsers(keyword.value, limit, offset.value)
+    users.value = results
+    if (results.length < limit) {
+      hasReachedEnd.value = true
+    }
+  } catch (error) {
+    console.error('Failed to search users', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const loadMore = async () => {
+  if (isLoadingMore.value || hasReachedEnd.value) return
+
+  isLoadingMore.value = true
+  offset.value += limit
+
+  try {
+    const results = await searchUsers(keyword.value, limit, offset.value)
+    users.value = [...users.value, ...results]
+    if (results.length < limit) {
+      hasReachedEnd.value = true
+    }
+  } catch (error) {
+    console.error('Failed to load more users', error)
+    offset.value -= limit // rollback
+  } finally {
+    isLoadingMore.value = false
+  }
+}
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'users' && keyword.value && !hasSearched.value) {
+    performSearch()
+  }
+})
 </script>
