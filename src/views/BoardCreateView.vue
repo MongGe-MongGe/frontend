@@ -18,7 +18,9 @@
             ></path>
           </svg>
         </button>
-        <h1 class="text-xl font-bold text-gray-900">새 게시글 작성</h1>
+        <h1 class="text-xl font-bold text-gray-900">
+          {{ isEditMode ? '게시글 수정' : '새 게시글 작성' }}
+        </h1>
       </div>
       <button
         @click="submitPost"
@@ -43,7 +45,7 @@
           </svg>
           등록 중...
         </span>
-        <span v-else>작성 완료</span>
+        <span v-else>{{ isEditMode ? '수정 완료' : '작성 완료' }}</span>
       </button>
     </header>
 
@@ -58,8 +60,8 @@
               v-model="category"
               class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900 font-medium appearance-none"
             >
-              <option value="Notice">공지 (Notice)</option>
-              <option value="Event">이벤트 (Event)</option>
+              <option value="Notice">공지사항</option>
+              <option value="Event">이벤트</option>
             </select>
           </div>
 
@@ -87,19 +89,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 import TiptapEditor from '@/components/common/TiptapEditor.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const category = ref('Notice')
 const title = ref('')
 const content = ref('')
 const isSubmitting = ref(false)
+
+const isEditMode = computed(() => !!route.params.id)
+
+onMounted(async () => {
+  if (isEditMode.value) {
+    try {
+      const config = authStore.token
+        ? {
+            headers: { Authorization: `Bearer ${authStore.token}` },
+          }
+        : {}
+      const res = await axios.get(`/api/posts/${route.params.id}`, config)
+      title.value = res.data.title
+      content.value = res.data.content
+      category.value = res.data.category
+    } catch (e) {
+      console.error('Failed to load post for edit', e)
+      alert('게시글을 불러오는데 실패했습니다.')
+      router.back()
+    }
+  }
+})
 
 const isValid = computed(() => {
   return title.value.trim().length > 0 && content.value.replace(/<[^>]*>?/gm, '').trim().length > 0
@@ -110,25 +135,28 @@ const submitPost = async () => {
 
   isSubmitting.value = true
   try {
-    await axios.post(
-      '/api/posts',
-      {
-        title: title.value,
-        content: content.value,
-        category: category.value,
+    const payload = {
+      title: title.value,
+      content: content.value,
+      category: category.value,
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${authStore.token}`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      },
-    )
+    }
+
+    if (isEditMode.value) {
+      await axios.put(`/api/posts/${route.params.id}`, payload, config)
+    } else {
+      await axios.post('/api/posts', payload, config)
+    }
 
     // 성공 시 게시판으로 이동
     router.replace('/board')
   } catch (e) {
-    console.error('Failed to create post', e)
-    alert('게시글 등록에 실패했습니다.')
+    console.error('Failed to save post', e)
+    alert(isEditMode.value ? '게시글 수정에 실패했습니다.' : '게시글 등록에 실패했습니다.')
   } finally {
     isSubmitting.value = false
   }

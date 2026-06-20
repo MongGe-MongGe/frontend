@@ -3,7 +3,7 @@
     <RootSidebar v-if="showSidebar" />
 
     <!-- Main Content Area -->
-    <main class="w-full h-full relative bg-white overflow-hidden flex justify-center">
+    <main class="flex-1 h-full relative bg-white overflow-hidden flex justify-center">
       <!-- Full width for Map and Error pages -->
       <div v-if="isFullWidthRoute" class="w-full h-full relative overflow-y-auto no-scrollbar">
         <router-view />
@@ -26,9 +26,16 @@ import { useRoute } from 'vue-router'
 import RootSidebar from './components/common/RootSidebar.vue'
 
 const route = useRoute()
-const isFullWidthRoute = computed(() => ['map', 'not-found', 'forbidden', 'catch-all'].includes(route.name as string))
+const isFullWidthRoute = computed(() =>
+  ['map', 'not-found', 'forbidden', 'catch-all', 'board', 'board-create', 'board-edit'].includes(
+    route.name as string,
+  ),
+)
 const showSidebar = computed(
-  () => !['login', 'signup', 'map', 'not-found', 'forbidden', 'catch-all'].includes(route.name as string),
+  () =>
+    !['login', 'signup', 'map', 'not-found', 'forbidden', 'catch-all'].includes(
+      route.name as string,
+    ),
 )
 </script>
 

@@ -62,6 +62,11 @@ const router = createRouter({
       component: () => import('../views/BoardCreateView.vue'),
     },
     {
+      path: '/board/edit/:id',
+      name: 'board-edit',
+      component: () => import('../views/BoardCreateView.vue'),
+    },
+    {
       path: '/404',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
@@ -94,7 +99,10 @@ router.beforeEach((to, from, next) => {
     }
   }
   // 관리자 권한이 필요한 페이지 접근 제어
-  else if (to.path.startsWith('/board/create') && authStore.user?.role !== 'ADMIN') {
+  else if (
+    (to.path.startsWith('/board/create') || to.path.startsWith('/board/edit')) &&
+    authStore.user?.role !== 'ADMIN'
+  ) {
     next({ name: 'forbidden' })
   }
   // 이미 로그인한 상태에서 로그인/회원가입 페이지 접근 시 메인으로 리다이렉트
