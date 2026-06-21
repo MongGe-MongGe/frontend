@@ -33,8 +33,8 @@ export const getUserProfile = async (handle: string) => {
   return response.data
 }
 
-export const searchUsers = async (keyword: string) => {
-  const response = await apiClient.get(`/users?keyword=${encodeURIComponent(keyword)}`)
+export const searchUsers = async (keyword: string, limit: number = 20, offset: number = 0) => {
+  const response = await apiClient.get(`/users?keyword=${encodeURIComponent(keyword)}&limit=${limit}&offset=${offset}`)
   return response.data // List of UserProfileResponse
 }
 

@@ -248,13 +248,13 @@ const fetchPosts = async (page: number) => {
   loading.value = true
   try {
     const res = await axios.get(`/api/posts`, {
-      params: { page, size: 5 }, // 5개씩 가져오기
+      params: { page: page - 1, size: 5 }, // 백엔드 API는 0-based 페이지 사용
       headers: {
         Authorization: `Bearer ${authStore.token}`,
       },
     })
     posts.value = res.data.posts
-    currentPage.value = res.data.currentPage
+    currentPage.value = res.data.currentPage + 1 // UI는 1-based 유지
     totalPages.value = res.data.totalPages
   } catch (e) {
     console.error('Failed to fetch posts', e)
