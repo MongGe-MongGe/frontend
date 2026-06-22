@@ -130,28 +130,6 @@
     <!-- Bottom Auth links -->
     <div class="p-2 border-t border-gray-100 flex flex-col gap-2">
       <template v-if="authStore.token">
-        <!-- 로그아웃 버튼 -->
-        <button
-          @click="handleLogout"
-          class="flex items-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-red-500 transition-colors overflow-hidden h-12 w-full text-left"
-        >
-          <div class="w-16 shrink-0 flex justify-center items-center h-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              ></path>
-            </svg>
-          </div>
-          <span
-            class="whitespace-nowrap font-medium transition-opacity duration-300"
-            :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-            >로그아웃</span
-          >
-        </button>
-
         <!-- 마이 페이지 버튼 -->
         <router-link
           v-if="authStore.user?.handle"
@@ -210,11 +188,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { Crown } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
-const router = useRouter()
 const route = useRoute()
 
 const isExpanded = ref(false)
@@ -235,10 +212,5 @@ const toggleSidebar = () => {
   if (route.name === 'map') return
   isExpanded.value = !isExpanded.value
   localStorage.setItem('sidebarExpanded', String(isExpanded.value))
-}
-
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/login')
 }
 </script>
