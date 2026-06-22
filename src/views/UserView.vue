@@ -20,7 +20,18 @@
           ></path>
         </svg>
       </router-link>
-      <div v-else class="w-6 h-6"></div>
+      <button
+        v-else-if="user"
+        @click="toggleFollow"
+        :class="[
+          'px-4 py-1.5 rounded-full font-bold text-xs transition',
+          user?.isFollowing
+            ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            : 'bg-blue-600 text-white hover:bg-blue-700',
+        ]"
+      >
+        {{ user?.isFollowing ? '팔로잉' : user?.isFollower ? '맞팔로우' : '팔로우' }}
+      </button>
     </header>
 
     <div class="p-4">
@@ -59,32 +70,7 @@
         </p>
       </div>
 
-      <div v-if="isMyProfile" class="flex space-x-2 mb-6">
-        <router-link
-          to="/settings/profile"
-          class="flex-1 bg-gray-100 py-1.5 rounded font-bold text-sm hover:bg-gray-200 transition text-center"
-        >
-          프로필 편집
-        </router-link>
-        <button
-          class="flex-1 bg-gray-100 py-1.5 rounded font-bold text-sm hover:bg-gray-200 transition"
-        >
-          프로필 공유
-        </button>
-      </div>
-      <div v-else class="flex space-x-2 mb-6">
-        <button
-          @click="toggleFollow"
-          :class="[
-            'flex-1 py-1.5 rounded font-bold text-sm transition',
-            user?.isFollowing
-              ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-              : 'bg-blue-600 text-white hover:bg-blue-700',
-          ]"
-        >
-          {{ user?.isFollowing ? '팔로잉' : user?.isFollower ? '맞팔로우' : '팔로우' }}
-        </button>
-      </div>
+
     </div>
 
     <!-- Tabs -->
