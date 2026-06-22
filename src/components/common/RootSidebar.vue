@@ -1,7 +1,7 @@
 <template>
   <aside
     class="h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-50 shrink-0 overflow-hidden"
-    :class="isExpanded ? 'w-64' : 'w-20'"
+    :class="effectiveIsExpanded ? 'w-64' : 'w-20'"
   >
     <!-- Header / Logo Area -->
     <div class="h-16 flex items-center border-b border-gray-100">
@@ -12,7 +12,7 @@
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
-              v-if="!isExpanded"
+              v-if="!effectiveIsExpanded"
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
@@ -30,7 +30,7 @@
       </div>
       <h1
         class="text-xl font-extrabold text-primary whitespace-nowrap transition-opacity duration-300"
-        :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+        :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
       >
         구루밍
       </h1>
@@ -55,7 +55,7 @@
         </div>
         <span
           class="whitespace-nowrap transition-opacity duration-300"
-          :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
           >홈</span
         >
       </router-link>
@@ -77,7 +77,7 @@
         </div>
         <span
           class="whitespace-nowrap transition-opacity duration-300"
-          :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
           >탐색</span
         >
       </router-link>
@@ -99,7 +99,7 @@
         </div>
         <span
           class="whitespace-nowrap transition-opacity duration-300"
-          :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
           >지도</span
         >
       </router-link>
@@ -121,7 +121,7 @@
         </div>
         <span
           class="whitespace-nowrap transition-opacity duration-300"
-          :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
           >게시판</span
         >
       </router-link>
@@ -147,7 +147,7 @@
           </div>
           <span
             class="whitespace-nowrap font-medium transition-opacity duration-300"
-            :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+            :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
             >로그아웃</span
           >
         </button>
@@ -162,14 +162,14 @@
           <div class="w-16 shrink-0 flex justify-center items-center h-full">
             <img
               :src="authStore.user?.profileImage || '/default_profile_image.png'"
-              @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'"
+              @error="(e) => ((e.target as HTMLImageElement).src = '/default_profile_image.png')"
               alt="프로필 이미지"
               class="w-8 h-8 rounded-full object-cover border border-gray-200"
             />
           </div>
           <span
             class="whitespace-nowrap font-medium transition-opacity duration-300 flex items-center gap-1"
-            :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+            :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
           >
             마이 페이지
             <Crown
@@ -198,7 +198,7 @@
           </div>
           <span
             class="whitespace-nowrap font-medium transition-opacity duration-300"
-            :class="isExpanded ? 'opacity-100' : 'opacity-0'"
+            :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
             >로그인</span
           >
         </router-link>
@@ -208,15 +208,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { Crown } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const isExpanded = ref(false)
+
+const effectiveIsExpanded = computed(() => {
+  if (route.name === 'map') return false
+  return isExpanded.value
+})
 
 onMounted(() => {
   const savedState = localStorage.getItem('sidebarExpanded')
@@ -226,6 +232,7 @@ onMounted(() => {
 })
 
 const toggleSidebar = () => {
+  if (route.name === 'map') return
   isExpanded.value = !isExpanded.value
   localStorage.setItem('sidebarExpanded', String(isExpanded.value))
 }

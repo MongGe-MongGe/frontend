@@ -7,21 +7,6 @@
     />
 
     <div class="flex-1 relative h-full w-full">
-      <!-- Back Button Floating -->
-      <button
-        @click="router.push('/')"
-        class="absolute top-4 right-4 z-10 bg-white p-3 rounded-full shadow-lg text-gray-700 hover:text-primary transition flex items-center justify-center"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          ></path>
-        </svg>
-      </button>
-
       <!-- Kakao Map -->
       <KakaoMap
         :lat="mapCenter.lat"
@@ -77,11 +62,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
-
-const router = useRouter()
 
 const mapCenter = ref({ lat: 37.5665, lng: 126.978 }) // 검색 및 최초 로드 시 설정할 맵 중심
 const currentViewCenter = ref({ lat: 37.5665, lng: 126.978 }) // 현재 사용자가 보고 있는 지도의 중심 좌표

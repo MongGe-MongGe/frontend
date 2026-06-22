@@ -32,10 +32,7 @@ const isFullWidthRoute = computed(() =>
   ),
 )
 const showSidebar = computed(
-  () =>
-    !['login', 'signup', 'map', 'not-found', 'forbidden', 'catch-all'].includes(
-      route.name as string,
-    ),
+  () => !['login', 'signup', 'not-found', 'forbidden', 'catch-all'].includes(route.name as string),
 )
 </script>
 

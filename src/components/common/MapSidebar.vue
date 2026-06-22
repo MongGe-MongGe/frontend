@@ -1,8 +1,8 @@
 <template>
   <aside class="h-full w-80 bg-white border-r border-gray-200 flex flex-col shrink-0">
     <!-- Search Area -->
-    <div class="p-4 border-b border-gray-100 shrink-0">
-      <form @submit.prevent="handleSearch" class="relative">
+    <div class="h-16 flex items-center px-4 border-b border-gray-100 shrink-0">
+      <form @submit.prevent="handleSearch" class="relative w-full">
         <input
           v-model="searchQuery"
           type="text"
