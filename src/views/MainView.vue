@@ -1,6 +1,16 @@
 <template>
   <PageContainer>
-    <div class="flex flex-col items-center justify-center py-32 px-4 text-center h-full">
+    <div v-if="feeds.length > 0" class="space-y-4 mt-4 px-4 pb-20 max-w-2xl mx-auto">
+      <FeedCard 
+        v-for="feed in feeds" 
+        :key="feed.id" 
+        :feed="feed" 
+        @edit="openEditModal" 
+        @delete="deleteFeed"
+      />
+    </div>
+    
+    <div v-else class="flex flex-col items-center justify-center py-32 px-4 text-center h-full">
       <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
         <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -22,12 +32,49 @@
         유저 탐색하기
       </button>
     </div>
+    <ReviewWriteWidget ref="writeWidget" @success="handleReviewSuccess" />
   </PageContainer>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useFeedStore } from '@/stores/feed'
 import PageContainer from '@/components/common/PageContainer.vue'
+import FeedCard from '@/components/review/FeedCard.vue'
+import ReviewWriteWidget from '@/components/review/ReviewWriteWidget.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const feedStore = useFeedStore()
+
+const writeWidget = ref<any>(null)
+
+const feeds = computed(() => {
+  return feedStore.getContext('home').items
+})
+
+const openEditModal = (feedData: any) => {
+  if (writeWidget.value) {
+    writeWidget.value.openModal(feedData)
+  }
+}
+
+const deleteFeed = async (id: string) => {
+  await feedStore.removeFeed(id)
+}
+
+const handleReviewSuccess = () => {
+  // reload feeds
+  feedStore.loadMyFeeds(true)
+}
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    if (feedStore.getContext('home').items.length === 0) {
+      feedStore.loadMyFeeds()
+    }
+  }
+})
 </script>

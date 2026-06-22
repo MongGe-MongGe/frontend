@@ -42,6 +42,11 @@ const router = createRouter({
       component: () => import('../views/RestaurantDetailView.vue'),
     },
     {
+      path: '/feed/:context/:targetReviewId',
+      name: 'feed-list',
+      component: () => import('../views/FeedListView.vue'),
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),

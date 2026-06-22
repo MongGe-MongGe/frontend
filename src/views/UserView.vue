@@ -26,15 +26,14 @@
     <div class="p-4">
       <div class="flex items-center space-x-6 mb-6">
         <img
-          v-if="user?.profileImage"
-          :src="user.profileImage"
+          :src="user?.profileImage || '/default_profile_image.png'"
+          @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'"
           class="w-20 h-20 bg-gray-200 rounded-full shrink-0 object-cover"
           alt="프로필 이미지"
         />
-        <div v-else class="w-20 h-20 bg-gray-200 rounded-full shrink-0"></div>
         <div class="flex-1 flex justify-between text-center">
           <div>
-            <div class="font-bold text-lg">12</div>
+            <div class="font-bold text-lg">{{ reviews.length }}</div>
             <div class="text-xs text-gray-500">리뷰</div>
           </div>
           <div
@@ -135,13 +134,16 @@
         }}
       </p>
     </div>
+    
+    <!-- Floating Review Write Button -->
+    <ReviewWriteWidget v-if="isMyProfile" ref="writeWidget" @success="onReviewCreated" />
 
     <!-- Follow List Modal -->
-    <FollowListModal
-      v-if="isModalOpen && user"
-      :user-id="user.id"
-      :type="modalType"
-      @close="isModalOpen = false"
+    <FollowListModal 
+      v-if="isModalOpen && user" 
+      :user-id="user.id" 
+      :type="modalType" 
+      @close="closeFollowModal" 
     />
   </PageContainer>
 </template>
@@ -150,13 +152,18 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useFeedStore } from '@/stores/feed'
 import { getUserProfile, followUser, unfollowUser } from '@/api/user'
 import PageContainer from '@/components/common/PageContainer.vue'
 import FollowListModal from '@/components/user/FollowListModal.vue'
+import ReviewWriteWidget from '@/components/review/ReviewWriteWidget.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const feedStore = useFeedStore()
+
+const writeWidget = ref<any>(null)
 
 interface UserProfile {
   id: string
@@ -173,20 +180,36 @@ interface UserProfile {
 const user = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 const reviews = computed(() => {
-  return []
+  if (!user.value) return []
+  return feedStore.getContext(`user_${user.value.id}`).items
 })
+
+const onReviewCreated = () => {
+  if (user.value) {
+    feedStore.loadUserReviews(user.value.id, true)
+  }
+}
 
 const isMyProfile = computed(() => {
   return authStore.user?.handle === user.value?.handle
 })
 
-const isModalOpen = ref(false)
-const modalType = ref<'followers' | 'followings'>('followers')
+const isModalOpen = computed(() => {
+  return !!route.query.modal
+})
+const modalType = computed<'followers' | 'followings'>(() => {
+  return (route.query.modal as 'followers' | 'followings') || 'followers'
+})
 
 const openFollowModal = (type: 'followers' | 'followings') => {
   if (!user.value) return
-  modalType.value = type
-  isModalOpen.value = true
+  router.push({ query: { ...route.query, modal: type } })
+}
+
+const closeFollowModal = () => {
+  const query = { ...route.query }
+  delete query.modal
+  router.push({ query })
 }
 
 const toggleFollow = async () => {
@@ -219,7 +242,13 @@ const loadProfile = async () => {
     const rawHandle = route.params.handle as string
     const handle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`
     user.value = await getUserProfile(handle)
-  } catch (error: unknown) {
+    
+    if (user.value) {
+      if (feedStore.getContext(`user_${user.value.id}`).items.length === 0) {
+        await feedStore.loadUserReviews(user.value.id)
+      }
+    }
+  } catch (error: any) {
     console.error('Failed to load user profile:', error)
     user.value = null
     // 유저를 찾을 수 없는 경우 (404 상태 코드인 경우)

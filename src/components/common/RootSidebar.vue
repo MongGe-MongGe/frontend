@@ -161,24 +161,11 @@
         >
           <div class="w-16 shrink-0 flex justify-center items-center h-full">
             <img
-              v-if="authStore.user?.profileImage"
-              :src="authStore.user.profileImage"
+              :src="authStore.user?.profileImage || '/default_profile_image.png'"
+              @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'"
               alt="프로필 이미지"
               class="w-8 h-8 rounded-full object-cover border border-gray-200"
             />
-            <div
-              v-else
-              class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                ></path>
-              </svg>
-            </div>
           </div>
           <span
             class="whitespace-nowrap font-medium transition-opacity duration-300 flex items-center gap-1"

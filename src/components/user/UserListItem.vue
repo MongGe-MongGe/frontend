@@ -5,12 +5,11 @@
   >
     <div class="flex items-center space-x-3">
       <img
-        v-if="user.profileImage"
-        :src="user.profileImage"
+        :src="user.profileImage || '/default_profile_image.png'"
+        @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'"
         alt="Profile"
         class="w-12 h-12 rounded-full object-cover shrink-0"
       />
-      <div v-else class="w-12 h-12 bg-gray-200 rounded-full shrink-0"></div>
 
       <div class="flex flex-col text-left">
         <span class="font-bold text-gray-900 text-sm">{{ user.nickname }}</span>
