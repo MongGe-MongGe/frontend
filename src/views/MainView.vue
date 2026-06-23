@@ -72,9 +72,7 @@ const handleReviewSuccess = () => {
 
 onMounted(() => {
   if (authStore.isAuthenticated) {
-    if (feedStore.getContext('home').items.length === 0) {
-      feedStore.loadMyFeeds()
-    }
+    feedStore.loadMyFeeds(true)
   }
 })
 </script>

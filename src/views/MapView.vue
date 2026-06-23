@@ -61,6 +61,7 @@
         <p class="text-gray-700 mb-6 text-sm">{{ selectedPlace.phone || '전화번호 정보 없음' }}</p>
         <div class="flex space-x-3">
           <button
+            @click="openSaveModal"
             class="flex-1 bg-gray-100 text-gray-800 py-3 rounded-xl font-bold hover:bg-gray-200 transition"
           >
             저장
@@ -73,6 +74,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Save Place Modal -->
+    <SavePlaceModal
+      v-if="isSaveModalOpen"
+      :place="selectedPlace"
+      @close="isSaveModalOpen = false"
+      @saved="isSaveModalOpen = false"
+    />
   </div>
 </template>
 
@@ -80,6 +89,10 @@
 import { ref, onMounted } from 'vue'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
+import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const mapCenter = ref({ lat: 37.5665, lng: 126.978 }) // 검색 및 최초 로드 시 설정할 맵 중심
 const currentViewCenter = ref({ lat: 37.5665, lng: 126.978 }) // 현재 사용자가 보고 있는 지도의 중심 좌표
@@ -89,6 +102,16 @@ const mapMarkers = ref<any[]>([])
 const searchResults = ref<any[]>([])
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const selectedPlace = ref<any>(null)
+
+const isSaveModalOpen = ref(false)
+
+const openSaveModal = () => {
+  if (!authStore.isAuthenticated) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+  isSaveModalOpen.value = true
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ps: any = null
