@@ -2,6 +2,7 @@
   <div class="relative w-full h-screen flex">
     <MapSidebar
       :search-results="searchResults"
+      :selected-place-id="selectedPlace?.id"
       @search="handleSearch"
       @select-place="handleSelectPlace"
     />
@@ -13,6 +14,7 @@
         :lng="mapCenter.lng"
         :level="4"
         :markers="mapMarkers"
+        :selected-id="selectedPlace?.id"
         @marker-click="handleMarkerClick"
         @center-changed="handleCenterChanged"
       />
@@ -24,9 +26,23 @@
       >
         <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
         <div class="flex justify-between items-start mb-4">
-          <div>
-            <h2 class="text-xl font-extrabold text-gray-900">{{ selectedPlace.title }}</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ selectedPlace.address || '카테고리 정보' }}</p>
+          <div class="flex-1 min-w-0 pr-4">
+            <div class="flex items-center gap-2 mb-1">
+              <h2 class="text-xl font-extrabold text-gray-900 truncate">
+                {{ selectedPlace.title }}
+              </h2>
+              <span
+                v-if="
+                  selectedPlace.category_name && selectedPlace.category_name.split('>').length > 1
+                "
+                class="text-sm text-gray-500 whitespace-nowrap"
+              >
+                {{ selectedPlace.category_name.split('>')[1].trim() }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-500 truncate">
+              {{ selectedPlace.address || '카테고리 정보' }}
+            </p>
           </div>
           <button
             @click="selectedPlace = null"
@@ -61,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 
@@ -76,6 +92,39 @@ const selectedPlace = ref<any>(null)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ps: any = null
+
+onMounted(() => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const center = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }
+        mapCenter.value = center
+        currentViewCenter.value = center
+        initSearch()
+      },
+      (error) => {
+        console.warn('Geolocation error:', error.message)
+        initSearch() // 실패 시 기본 좌표로 검색
+      },
+    )
+  } else {
+    initSearch() // 미지원 시 기본 좌표로 검색
+  }
+})
+
+const initSearch = () => {
+  if (window.kakao && window.kakao.maps) {
+    window.kakao.maps.load(() => {
+      handleSearch('맛집')
+    })
+  } else {
+    // 스크립트가 아직 로드되지 않았다면 약간 지연 후 재시도
+    setTimeout(initSearch, 500)
+  }
+}
 
 const handleCenterChanged = (center: { lat: number; lng: number }) => {
   currentViewCenter.value = center
@@ -94,7 +143,7 @@ const handleSearch = (keyword: string) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mergedData: any[] = []
-  let pendingRequests = 2
+  let pendingRequests = 6 // 최대 3페이지 * 2개 카테고리
 
   const processResults = () => {
     if (mergedData.length === 0) {
@@ -104,10 +153,19 @@ const handleSearch = (keyword: string) => {
       return
     }
 
-    // 거리순 정렬 (API 결과에 포함된 distance 활용)
-    mergedData.sort((a, b) => Number(a.distance) - Number(b.distance))
+    // 중복 제거 (API가 같은 결과를 중복 반환하는 경우 방지)
+    const uniqueMap = new Map()
+    mergedData.forEach((item) => uniqueMap.set(item.id, item))
+    let uniqueData = Array.from(uniqueMap.values())
 
-    searchResults.value = mergedData
+    // 거리순 정렬 (API 결과에 포함된 distance 활용)
+    uniqueData.sort((a, b) => Number(a.distance) - Number(b.distance))
+
+    // 카카오 정책(최대 3페이지)에 맞게 가장 가까운 순으로 45개까지만 자르기
+    uniqueData = uniqueData.slice(0, 45)
+
+    searchResults.value = uniqueData
+    mergedData = uniqueData // 재사용을 위해 할당
 
     // Update markers
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,6 +175,7 @@ const handleSearch = (keyword: string) => {
       title: place.place_name,
       address: place.address_name,
       phone: place.phone,
+      category_name: place.category_name,
       id: place.id,
     }))
 
@@ -131,6 +190,7 @@ const handleSearch = (keyword: string) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const callback = (data: any, status: any) => {
+    // ZERO_RESULT 등 오류가 반환되어도 펜딩 횟수는 차감
     if (status === window.kakao.maps.services.Status.OK) {
       mergedData = [...mergedData, ...data]
     }
@@ -150,9 +210,11 @@ const handleSearch = (keyword: string) => {
     sort: window.kakao.maps.services.SortBy.DISTANCE,
   }
 
-  // 음식점(FD6)과 카페(CE7) 카테고리로 좁혀서 거리순 병렬 검색
-  ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'FD6' })
-  ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'CE7' })
+  // 음식점(FD6)과 카페(CE7) 카테고리로 좁혀서 거리순 병렬 검색 (최대 3페이지까지 호출)
+  for (let page = 1; page <= 3; page++) {
+    ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'FD6', page })
+    ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'CE7', page })
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -162,9 +224,11 @@ const handleSelectPlace = (place: any) => {
     lng: Number(place.x),
   }
   selectedPlace.value = {
+    id: place.id,
     title: place.place_name,
     address: place.address_name,
     phone: place.phone,
+    category_name: place.category_name,
     lat: Number(place.y),
     lng: Number(place.x),
   }
