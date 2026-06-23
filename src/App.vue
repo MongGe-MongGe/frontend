@@ -9,10 +9,10 @@
         <router-view />
       </div>
 
-      <!-- Mobile constrained container for others -->
+      <!-- Constrained container removed; now uses full width with center alignment in views -->
       <div
         v-else
-        class="w-full max-w-md h-full relative flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar"
+        class="w-full h-full relative flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar"
       >
         <router-view />
       </div>

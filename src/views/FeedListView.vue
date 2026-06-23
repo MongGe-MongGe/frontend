@@ -9,7 +9,7 @@
       <h1 class="font-bold text-lg text-gray-900">피드</h1>
     </header>
 
-    <div class="py-4 px-4 max-w-2xl mx-auto space-y-6 pb-20">
+    <div class="w-full flex flex-col items-center py-4 px-4 space-y-6 pb-20">
       <FeedCard 
         v-for="feed in feeds" 
         :key="feed.id" 

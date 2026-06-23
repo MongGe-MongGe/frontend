@@ -1,5 +1,11 @@
 <template>
-  <div class="bg-white border border-gray-200 rounded-xl mb-6 overflow-hidden max-w-2xl mx-auto shadow-sm">
+  <!-- Outer wrapper to center the inner flex box -->
+  <div class="flex justify-center w-full mb-6">
+    <!-- Inner box that wraps feed and comment side-by-side -->
+    <div class="flex flex-col lg:flex-row gap-4 transition-all duration-300 w-full max-w-[1250px] justify-center">
+      
+      <!-- Left: Original Feed Card -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm w-full max-w-md shrink-0 mx-auto lg:mx-0">
     <!-- Header -->
     <header class="flex items-center justify-between p-3 border-b border-gray-100">
       <div 
@@ -129,7 +135,7 @@
         </button>
 
         <!-- Comment -->
-        <button class="flex items-center group transition">
+        <button @click="isCommentOpen = !isCommentOpen" class="flex items-center group transition">
           <div class="p-2 rounded-full group-hover:bg-blue-50 group-hover:text-blue-500 transition">
             <MessageCircle class="w-5 h-5" />
           </div>
@@ -152,9 +158,23 @@
       </div>
     </div>
 
+      </div>
+      
+      <!-- Right: Comment Box -->
+      <Transition name="slide-out">
+        <div v-if="isCommentOpen" class="bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-md shrink-0 mx-auto lg:mx-0 flex flex-col overflow-hidden" style="height: 650px;">
+           <CommentBox 
+             :feedId="feed.id" 
+             :commentCount="feed.commentCount" 
+             @close="isCommentOpen = false" 
+             @update:commentCount="(c) => feed.commentCount = c" 
+           />
+        </div>
+      </Transition>
+    </div>
   </div>
 
-  <SavePlaceModal 
+  <SavePlaceModal  
     v-if="isSaveModalOpen" 
     :place="feed.place" 
     @close="isSaveModalOpen = false" 
@@ -168,6 +188,7 @@ import { useAuthStore } from '@/stores/auth'
 import { followUser, unfollowUser } from '@/api/user'
 import { MoreHorizontal, ChevronLeft, ChevronRight, MapPin, Star, Heart, MessageCircle, Bookmark } from 'lucide-vue-next'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
+import CommentBox from '@/components/review/CommentBox.vue'
 
 const props = defineProps<{
   feed: any
@@ -181,6 +202,7 @@ const authStore = useAuthStore()
 const currentImageIndex = ref(0)
 const isDropdownOpen = ref(false)
 const isSaveModalOpen = ref(false)
+const isCommentOpen = ref(false)
 
 const openSaveModal = () => {
   if (!authStore.isAuthenticated) {
@@ -249,3 +271,45 @@ const formatDate = (dateString: string) => {
   return `${yy}.${mm}.${dd}`
 }
 </script>
+
+<style scoped>
+.slide-out-enter-active,
+.slide-out-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+/* Mobile (column): slide down */
+@media (max-width: 1023px) {
+  .slide-out-enter-from,
+  .slide-out-leave-to {
+    opacity: 0;
+    max-height: 0 !important;
+    transform: translateY(-20px);
+    margin-top: -1rem; /* cancel gap */
+  }
+  .slide-out-enter-to,
+  .slide-out-leave-from {
+    opacity: 1;
+    max-height: 650px;
+    transform: translateY(0);
+  }
+}
+
+/* Desktop (row): slide right */
+@media (min-width: 1024px) {
+  .slide-out-enter-from,
+  .slide-out-leave-to {
+    opacity: 0;
+    max-width: 0 !important;
+    transform: translateX(-50px);
+    margin-left: -1rem; /* cancel gap */
+  }
+  .slide-out-enter-to,
+  .slide-out-leave-from {
+    opacity: 1;
+    max-width: 448px; /* max-w-md */
+    transform: translateX(0);
+  }
+}
+</style>

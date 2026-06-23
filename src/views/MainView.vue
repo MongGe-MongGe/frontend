@@ -1,6 +1,6 @@
 <template>
   <PageContainer>
-    <div v-if="feeds.length > 0" class="space-y-4 mt-4 px-4 pb-20 max-w-2xl mx-auto">
+    <div v-if="feeds.length > 0" class="w-full flex flex-col items-center space-y-4 mt-4 px-4 pb-20">
       <FeedCard 
         v-for="feed in feeds" 
         :key="feed.id" 

@@ -17,8 +17,9 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // You can attach authorization tokens here if needed
-    const token = localStorage.getItem('token');
+    let token = localStorage.getItem('token');
     if (token && config.headers) {
+      token = token.replace(/^"(.*)"$/, '$1'); // 따옴표가 포함되어 있다면 제거
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config

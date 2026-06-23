@@ -234,7 +234,7 @@
             <div v-if="!groupPlaces[group.id]" class="p-4 flex justify-center">
               <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
             </div>
-            <div v-else-if="groupPlaces[group.id].length === 0" class="p-6 text-center text-sm text-gray-500">
+            <div v-else-if="groupPlaces[group.id]?.length === 0" class="p-6 text-center text-sm text-gray-500">
               이 그룹에 저장된 장소가 없습니다.
             </div>
             <div v-else class="divide-y divide-gray-100">
