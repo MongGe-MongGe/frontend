@@ -102,15 +102,15 @@ const saveToGroup = async (groupId: string) => {
   try {
     await createGoodPlace(groupId, {
       id: String(props.place.id),
-      name: props.place.place_name || props.place.title,
-      category_name: props.place.category_name,
-      category_group_code: props.place.category_group_code,
-      phone: props.place.phone,
-      address_name: props.place.address_name || props.place.address,
-      road_address_name: props.place.road_address_name,
-      x: String(props.place.x || props.place.lng),
-      y: String(props.place.y || props.place.lat),
-      place_url: props.place.place_url
+      name: props.place.place_name || props.place.title || props.place.name,
+      category_name: props.place.category_name || props.place.categoryName || '',
+      category_group_code: props.place.category_group_code || props.place.categoryGroupCode || '',
+      phone: props.place.phone || '',
+      address_name: props.place.address_name || props.place.addressName || props.place.address || '',
+      road_address_name: props.place.road_address_name || props.place.roadAddressName || '',
+      x: String(props.place.x || props.place.lng || '0'),
+      y: String(props.place.y || props.place.lat || '0'),
+      place_url: props.place.place_url || props.place.placeUrl || ''
     })
     alert('장소가 저장되었습니다.')
     emit('saved')

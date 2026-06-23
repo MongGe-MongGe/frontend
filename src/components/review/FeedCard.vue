@@ -104,7 +104,7 @@
         </div>
       </div>
       <!-- Place Save (Bookmark) -->
-      <button class="flex items-center group transition text-gray-400 hover:text-blue-500">
+      <button @click="openSaveModal" class="flex items-center group transition text-gray-400 hover:text-blue-500">
         <div class="p-2 rounded-full group-hover:bg-blue-50 transition">
           <Bookmark class="w-5 h-5" />
         </div>
@@ -153,6 +153,12 @@
     </div>
 
   </div>
+
+  <SavePlaceModal 
+    v-if="isSaveModalOpen" 
+    :place="feed.place" 
+    @close="isSaveModalOpen = false" 
+  />
 </template>
 
 <script setup lang="ts">
@@ -161,6 +167,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { followUser, unfollowUser } from '@/api/user'
 import { MoreHorizontal, ChevronLeft, ChevronRight, MapPin, Star, Heart, MessageCircle, Bookmark } from 'lucide-vue-next'
+import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
 
 const props = defineProps<{
   feed: any
@@ -173,6 +180,15 @@ const authStore = useAuthStore()
 
 const currentImageIndex = ref(0)
 const isDropdownOpen = ref(false)
+const isSaveModalOpen = ref(false)
+
+const openSaveModal = () => {
+  if (!authStore.isAuthenticated) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+  isSaveModalOpen.value = true
+}
 
 // Initialize isFollowing from the backend provided author status
 const isFollowing = ref(props.feed.author.isFollowing || false)

@@ -132,6 +132,25 @@
     </template>
 
     <template v-else-if="activeTab === 'groups'">
+      <!-- Group Creation Input -->
+      <div v-if="isMyProfile" class="p-4 border-b border-gray-100 bg-white">
+        <div class="flex gap-2">
+          <input
+            v-model="newGroupName"
+            type="text"
+            placeholder="새 맛집 그룹 만들기"
+            class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition"
+            @keyup.enter="handleCreateGroup"
+          />
+          <button
+            @click="handleCreateGroup"
+            :disabled="!newGroupName.trim() || isCreatingGroup"
+            class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl disabled:opacity-50 transition-colors whitespace-nowrap"
+          >
+            생성
+          </button>
+        </div>
+      </div>
       <div v-if="isGroupsLoading" class="flex justify-center p-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
@@ -261,7 +280,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFeedStore } from '@/stores/feed'
 import { getUserProfile, followUser, unfollowUser } from '@/api/user'
-import { getUserGroups, deleteGroup, updateGroup } from '@/api/group'
+import { getUserGroups, deleteGroup, updateGroup, createGroup } from '@/api/group'
 import { getGroupGoodPlaces, deleteGoodPlaceFromGroup } from '@/api/goodPlace'
 import PageContainer from '@/components/common/PageContainer.vue'
 import Tooltip from '@/components/common/Tooltip.vue'
@@ -295,6 +314,25 @@ const groups = ref<any[]>([])
 const selectedGroupId = ref<string | null>(null)
 const groupPlaces = ref<Record<string, any[]>>({})
 const isGroupsLoading = ref(false)
+
+const newGroupName = ref('')
+const isCreatingGroup = ref(false)
+
+const handleCreateGroup = async () => {
+  if (!newGroupName.value.trim() || isCreatingGroup.value) return
+  
+  try {
+    isCreatingGroup.value = true
+    await createGroup(newGroupName.value.trim())
+    newGroupName.value = ''
+    await loadUserGroups() // 새로 생성된 그룹 반영
+  } catch (error) {
+    console.error('Failed to create group', error)
+    alert('그룹 생성에 실패했습니다.')
+  } finally {
+    isCreatingGroup.value = false
+  }
+}
 
 const loadUserGroups = async () => {
   if (!user.value) return
