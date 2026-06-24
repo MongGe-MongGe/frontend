@@ -279,8 +279,10 @@ import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useAlert } from '@/composables/useAlert'
 
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const mapCenter = ref({ lat: 37.5665, lng: 126.978 }) // 검색 및 최초 로드 시 설정할 맵 중심
 const currentViewCenter = ref({ lat: 37.5665, lng: 126.978 }) // 현재 사용자가 보고 있는 지도의 중심 좌표
@@ -388,7 +390,7 @@ watch(selectedPlace, async (newPlace) => {
 
 const openSaveModal = () => {
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    showAlert('로그인이 필요합니다.', 'warning')
     return
   }
   isSaveModalOpen.value = true
@@ -442,7 +444,7 @@ const handleBoundsChanged = (bounds: any) => {
 const handleSearch = (keyword: string) => {
   if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
     console.error('Kakao Places Service is not available.')
-    alert('지도 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+    showAlert('지도 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'warning')
     return
   }
 
@@ -458,7 +460,7 @@ const handleSearch = (keyword: string) => {
     if (mergedData.length === 0) {
       searchResults.value = []
       mapMarkers.value = []
-      alert('검색 결과 중 식당이나 카페가 존재하지 않습니다.')
+      showAlert('검색 결과 중 식당이나 카페가 존재하지 않습니다.', 'info')
       return
     }
 

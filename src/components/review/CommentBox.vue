@@ -5,7 +5,12 @@
       <h3 class="font-bold text-gray-900">댓글 {{ commentCount }}개</h3>
       <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 p-1">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>
@@ -19,32 +24,48 @@
         아직 작성된 댓글이 없습니다.
       </div>
       <div v-else v-for="comment in comments" :key="comment.id" class="flex space-x-3 group">
-        <img :src="comment.author.profileImage || '/default_profile_image.png'" @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'" class="w-8 h-8 rounded-full object-cover shrink-0" />
+        <img
+          :src="comment.author.profileImage || '/default_profile_image.png'"
+          @error="(e) => ((e.target as HTMLImageElement).src = '/default_profile_image.png')"
+          class="w-8 h-8 rounded-full object-cover shrink-0"
+        />
         <div class="flex-1">
           <div class="flex items-center space-x-2">
             <span class="font-bold text-sm text-gray-900">{{ comment.author.nickname }}</span>
             <span class="text-xs text-gray-500">{{ formatDate(comment.createdAt) }}</span>
           </div>
-          <p class="text-sm text-gray-800 mt-0.5 whitespace-pre-wrap break-all">{{ comment.content }}</p>
+          <p class="text-sm text-gray-800 mt-0.5 whitespace-pre-wrap break-all">
+            {{ comment.content }}
+          </p>
         </div>
-        <div v-if="authStore.user?.id === comment.author.id" class="opacity-0 group-hover:opacity-100 transition-opacity">
-          <button @click="handleDelete(comment.id)" class="text-xs text-red-500 hover:text-red-700 p-1">삭제</button>
+        <div
+          v-if="authStore.user?.id === comment.author.id"
+          class="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <button
+            @click="handleDelete(comment.id)"
+            class="text-xs text-red-500 hover:text-red-700 p-1"
+          >
+            삭제
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Comment Input -->
     <div class="p-3 border-t border-gray-100 bg-white">
-      <div class="flex items-center space-x-2 bg-gray-50 rounded-full px-4 py-2 border border-gray-200 focus-within:border-primary focus-within:bg-white transition-colors">
-        <input 
-          v-model="newComment" 
-          type="text" 
-          placeholder="댓글 달기..." 
+      <div
+        class="flex items-center space-x-2 bg-gray-50 rounded-full px-4 py-2 border border-gray-200 focus-within:border-primary focus-within:bg-white transition-colors"
+      >
+        <input
+          v-model="newComment"
+          type="text"
+          placeholder="댓글 달기..."
           class="flex-1 bg-transparent border-none focus:outline-none text-sm"
           @keyup.enter="handleSubmit"
         />
-        <button 
-          @click="handleSubmit" 
+        <button
+          @click="handleSubmit"
           :disabled="!newComment.trim() || isSubmitting"
           class="text-sm font-bold text-primary disabled:opacity-50 transition-opacity"
         >
@@ -58,7 +79,8 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { getCommentsByReview, createComment, deleteComment } from '@/api/comment'
+import { createComment, deleteComment, getCommentsByReview } from '@/api/comment'
+import { useAlert } from '@/composables/useAlert'
 
 const props = defineProps<{
   feedId: string
@@ -68,6 +90,8 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'update:commentCount'])
 
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const comments = ref<any[]>([])
 const isLoading = ref(true)
 const newComment = ref('')
@@ -88,9 +112,9 @@ const loadComments = async () => {
 
 const handleSubmit = async () => {
   if (!newComment.value.trim() || isSubmitting.value) return
-  
+
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    showAlert('로그인이 필요합니다.', 'warning')
     return
   }
 
@@ -100,7 +124,7 @@ const handleSubmit = async () => {
     comments.value.push(newCmd)
     newComment.value = ''
     emit('update:commentCount', props.commentCount + 1)
-    
+
     nextTick(() => {
       if (scrollContainer.value) {
         scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight
@@ -108,7 +132,7 @@ const handleSubmit = async () => {
     })
   } catch (error) {
     console.error('Failed to create comment', error)
-    alert('댓글 작성에 실패했습니다.')
+    showAlert('댓글 작성에 실패했습니다.', 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -118,11 +142,11 @@ const handleDelete = async (commentId: string) => {
   if (!confirm('댓글을 삭제하시겠습니까?')) return
   try {
     await deleteComment(commentId)
-    comments.value = comments.value.filter(c => c.id !== commentId)
+    comments.value = comments.value.filter((c) => c.id !== commentId)
     emit('update:commentCount', props.commentCount - 1)
   } catch (error) {
     console.error('Failed to delete comment', error)
-    alert('댓글 삭제에 실패했습니다.')
+    showAlert('댓글 삭제에 실패했습니다.', 'error')
   }
 }
 

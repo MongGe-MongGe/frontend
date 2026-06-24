@@ -1,12 +1,25 @@
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click.self="$emit('close')">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md h-[80vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    @click.self="$emit('close')"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-xl w-full max-w-md h-[80vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+    >
       <!-- Header -->
       <div class="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
         <h2 class="text-lg font-bold text-gray-900">장소 검색</h2>
-        <button @click="$emit('close')" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+        <button
+          @click="$emit('close')"
+          class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+        >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
           </svg>
         </button>
       </div>
@@ -21,8 +34,18 @@
             placeholder="식당 또는 카페 이름을 검색하세요"
             class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl py-3 pl-10 pr-4 transition-all"
           />
-          <svg class="w-5 h-5 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          <svg
+            class="w-5 h-5 absolute left-3 top-3.5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
           </svg>
         </div>
       </div>
@@ -41,7 +64,9 @@
           >
             <div class="flex justify-between items-start mb-1">
               <h3 class="font-bold text-gray-900">{{ place.place_name }}</h3>
-              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-lg whitespace-nowrap ml-2">
+              <span
+                class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-lg whitespace-nowrap ml-2"
+              >
                 {{ place.category_group_name }}
               </span>
             </div>
@@ -61,21 +86,25 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAlert } from '@/composables/useAlert'
 
 const emit = defineEmits(['close', 'select'])
+const { showAlert } = useAlert()
 
 const keyword = ref('')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const results = ref<any[]>([])
 const loading = ref(false)
 const searched = ref(false)
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ps: any = null
 
 const searchPlaces = () => {
   if (!keyword.value.trim()) return
 
   if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
-    alert('지도 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+    showAlert('지도 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'warning')
     return
   }
 
@@ -87,6 +116,7 @@ const searchPlaces = () => {
   searched.value = true
   results.value = []
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mergedData: any[] = []
   let pendingRequests = 2
 
@@ -95,6 +125,7 @@ const searchPlaces = () => {
     results.value = mergedData
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const callback = (data: any, status: any) => {
     if (status === window.kakao.maps.services.Status.OK) {
       mergedData = [...mergedData, ...data]
@@ -110,6 +141,7 @@ const searchPlaces = () => {
   ps.keywordSearch(keyword.value, callback, { category_group_code: 'CE7' })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const selectPlace = (place: any) => {
   // 백엔드 PlaceRequest 모델에 맞춰서 전달
   const placeData = {

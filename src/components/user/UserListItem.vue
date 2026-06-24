@@ -6,7 +6,7 @@
     <div class="flex items-center space-x-3">
       <img
         :src="user.profileImage || '/default_profile_image.png'"
-        @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'"
+        @error="(e) => ((e.target as HTMLImageElement).src = '/default_profile_image.png')"
         alt="Profile"
         class="w-12 h-12 rounded-full object-cover shrink-0"
       />
@@ -38,6 +38,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { followUser, unfollowUser } from '@/api/user'
+import { useAlert } from '@/composables/useAlert'
 
 const props = defineProps<{
   user: {
@@ -52,6 +53,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const localIsFollowing = ref(props.user.isFollowing)
 
@@ -65,7 +67,7 @@ const goToProfile = () => {
 
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    showAlert('로그인이 필요합니다.', 'warning')
     return
   }
 
@@ -78,8 +80,8 @@ const toggleFollow = async () => {
       localIsFollowing.value = true
     }
   } catch (error) {
-    console.error('Follow toggle error:', error)
-    alert('팔로우 상태를 변경할 수 없습니다.')
+    console.error('팔로우 전환 실패:', error)
+    showAlert('팔로우 상태를 변경할 수 없습니다.', 'error')
   }
 }
 </script>

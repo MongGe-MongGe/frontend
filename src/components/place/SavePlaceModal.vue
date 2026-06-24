@@ -1,11 +1,19 @@
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="$emit('close')">
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    @click.self="$emit('close')"
+  >
     <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-bold text-gray-900">장소 저장</h3>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -58,13 +66,17 @@
 import { ref, onMounted } from 'vue'
 import { getMyGroups, createGroup } from '@/api/group'
 import { createGoodPlace } from '@/api/goodPlace'
+import { useAlert } from '@/composables/useAlert'
 
 const props = defineProps<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   place: any
 }>()
 
 const emit = defineEmits(['close', 'saved'])
+const { showAlert } = useAlert()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const groups = ref<any[]>([])
 const isLoading = ref(true)
 const newGroupName = ref('')
@@ -76,7 +88,7 @@ const fetchGroups = async () => {
     groups.value = await getMyGroups()
   } catch (error) {
     console.error('Failed to fetch groups', error)
-    alert('그룹 목록을 불러오지 못했습니다.')
+    showAlert('그룹 목록을 불러오지 못했습니다.', 'error')
   } finally {
     isLoading.value = false
   }
@@ -84,7 +96,7 @@ const fetchGroups = async () => {
 
 const handleCreateGroup = async () => {
   if (!newGroupName.value.trim() || isCreating.value) return
-  
+
   try {
     isCreating.value = true
     const newGroup = await createGroup(newGroupName.value.trim())
@@ -92,7 +104,7 @@ const handleCreateGroup = async () => {
     newGroupName.value = ''
   } catch (error) {
     console.error('Failed to create group', error)
-    alert('그룹 생성에 실패했습니다.')
+    showAlert('그룹 생성에 실패했습니다.', 'error')
   } finally {
     isCreating.value = false
   }
@@ -106,18 +118,19 @@ const saveToGroup = async (groupId: string) => {
       category_name: props.place.category_name || props.place.categoryName || '',
       category_group_code: props.place.category_group_code || props.place.categoryGroupCode || '',
       phone: props.place.phone || '',
-      address_name: props.place.address_name || props.place.addressName || props.place.address || '',
+      address_name:
+        props.place.address_name || props.place.addressName || props.place.address || '',
       road_address_name: props.place.road_address_name || props.place.roadAddressName || '',
       x: String(props.place.x || props.place.lng || '0'),
       y: String(props.place.y || props.place.lat || '0'),
-      place_url: props.place.place_url || props.place.placeUrl || ''
+      place_url: props.place.place_url || props.place.placeUrl || '',
     })
-    alert('장소가 저장되었습니다.')
+    showAlert('장소가 저장되었습니다.', 'success')
     emit('saved')
     emit('close')
   } catch (error) {
     console.error('Failed to save place', error)
-    alert('장소 저장에 실패했습니다. 이미 저장된 장소일 수 있습니다.')
+    showAlert('장소 저장에 실패했습니다. 이미 저장된 장소일 수 있습니다.', 'error')
   }
 }
 

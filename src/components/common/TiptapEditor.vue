@@ -149,16 +149,15 @@ import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import { useAlert } from '@/composables/useAlert'
 
 const props = defineProps<{
   modelValue: string
 }>()
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-}>()
-
+const emit = defineEmits(['update:modelValue'])
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const editor = useEditor({
   content: props.modelValue,
@@ -239,7 +238,7 @@ const handleImageUpload = async (event: Event) => {
     }
   } catch (error) {
     console.error('이미지 업로드 실패:', error)
-    alert('이미지 업로드에 실패했습니다.')
+    showAlert('이미지 업로드에 실패했습니다.', 'error')
   } finally {
     // Reset file input
     input.value = ''

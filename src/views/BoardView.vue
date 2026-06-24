@@ -1,10 +1,16 @@
 <template>
   <div class="flex justify-center w-full min-h-screen pb-10 mt-6 px-4">
-    <div class="flex flex-col lg:flex-row gap-4 transition-all duration-300 w-full max-w-[1250px] justify-center items-start">
+    <div
+      class="flex flex-col lg:flex-row gap-4 transition-all duration-300 w-full max-w-[1250px] justify-center items-start"
+    >
       <!-- Left Pane: Post List -->
-      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm w-full max-w-md shrink-0 flex flex-col h-[650px] mx-auto lg:mx-0">
+      <div
+        class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm w-full max-w-md shrink-0 flex flex-col h-[650px] mx-auto lg:mx-0"
+      >
         <!-- Header -->
-        <header class="flex items-center justify-between p-4 border-b border-gray-100 bg-white z-10 shrink-0">
+        <header
+          class="flex items-center justify-between p-4 border-b border-gray-100 bg-white z-10 shrink-0"
+        >
           <h1 class="text-lg font-bold text-gray-900">게시판</h1>
           <button
             v-if="isAdmin"
@@ -15,7 +21,9 @@
           </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto no-scrollbar p-3 bg-gray-50 flex flex-col gap-3 relative">
+        <div
+          class="flex-1 overflow-y-auto no-scrollbar p-3 bg-gray-50 flex flex-col gap-3 relative"
+        >
           <div v-if="loading" class="flex justify-center py-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
@@ -52,7 +60,11 @@
                 </span>
                 <span class="text-xs text-gray-400">{{ formatDate(post.createdAt) }}</span>
               </div>
-              <h2 class="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">{{ post.title }}</h2>
+              <h2
+                class="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors"
+              >
+                {{ post.title }}
+              </h2>
               <div class="text-[11px] text-gray-400 mt-1">작성자: {{ post.authorNickname }}</div>
             </div>
           </div>
@@ -65,7 +77,12 @@
               class="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                ></path>
               </svg>
             </button>
 
@@ -89,7 +106,12 @@
               class="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
               </svg>
             </button>
           </div>
@@ -108,7 +130,12 @@
               class="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
               </svg>
             </button>
             <div class="pr-8">
@@ -122,11 +149,18 @@
               >
                 {{ selectedPost.category === 'Notice' ? '공지사항' : '이벤트' }}
               </span>
-              <h2 class="text-xl font-bold text-gray-900 leading-tight">{{ selectedPost.title }}</h2>
+              <h2 class="text-xl font-bold text-gray-900 leading-tight">
+                {{ selectedPost.title }}
+              </h2>
             </div>
-            
+
             <div class="flex justify-between items-center text-xs text-gray-500 mt-2">
-              <span>작성자: <span class="font-medium text-gray-700">{{ selectedPost.authorNickname }}</span></span>
+              <span
+                >작성자:
+                <span class="font-medium text-gray-700">{{
+                  selectedPost.authorNickname
+                }}</span></span
+              >
               <span>{{ formatDate(selectedPost.createdAt) }}</span>
             </div>
 
@@ -150,7 +184,9 @@
             class="p-5 overflow-y-auto flex-1 prose prose-sm max-w-none prose-img:rounded-xl prose-a:text-primary"
           >
             <div v-if="selectedPost.content" v-html="selectedPost.content"></div>
-            <div v-else class="text-gray-400 italic text-sm text-center py-10">게시글 본문이 비어있습니다.</div>
+            <div v-else class="text-gray-400 italic text-sm text-center py-10">
+              게시글 본문이 비어있습니다.
+            </div>
           </div>
         </div>
       </Transition>
@@ -162,10 +198,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useAlert } from '@/composables/useAlert'
 import axios from 'axios'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
 
@@ -234,9 +272,9 @@ const deletePost = async (post: Post) => {
     postCache.delete(post.id) // 캐시에서도 삭제
     selectedPost.value = null
     fetchPosts(currentPage.value)
-  } catch (e) {
-    console.error('Failed to delete post', e)
-    alert('게시글 삭제에 실패했습니다.')
+  } catch (error) {
+    showAlert('게시글 삭제에 실패했습니다.', 'error')
+    console.error(error)
   }
 }
 
@@ -256,9 +294,9 @@ const openPost = async (post: Post) => {
     const res = await axios.get(`/api/posts/${post.id}`, config)
     postCache.set(post.id, res.data) // 불러온 데이터 캐싱
     selectedPost.value = res.data
-  } catch (e) {
-    console.error('Failed to fetch post detail', e)
-    alert('게시글을 불러오는데 실패했습니다.')
+  } catch (error) {
+    showAlert('게시글을 불러오는데 실패했습니다.', 'error')
+    console.error(error)
   }
 }
 

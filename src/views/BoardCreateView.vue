@@ -92,12 +92,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useAlert } from '@/composables/useAlert'
 import axios from 'axios'
 import TiptapEditor from '@/components/common/TiptapEditor.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const category = ref('Notice')
 const title = ref('')
@@ -120,7 +122,7 @@ onMounted(async () => {
       category.value = res.data.category
     } catch (e) {
       console.error('Failed to load post for edit', e)
-      alert('게시글을 불러오는데 실패했습니다.')
+      showAlert('게시글을 불러오는데 실패했습니다.', 'error')
       router.back()
     }
   }
@@ -156,7 +158,10 @@ const submitPost = async () => {
     router.replace('/board')
   } catch (e) {
     console.error('Failed to save post', e)
-    alert(isEditMode.value ? '게시글 수정에 실패했습니다.' : '게시글 등록에 실패했습니다.')
+    showAlert(
+      isEditMode.value ? '게시글 수정에 실패했습니다.' : '게시글 등록에 실패했습니다.',
+      'error',
+    )
   } finally {
     isSubmitting.value = false
   }
