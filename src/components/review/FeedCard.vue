@@ -130,14 +130,22 @@
         <button
           @click="toggleLike"
           :disabled="isLiking"
-          class="flex items-center group transition"
+          class="flex items-center group transition relative"
           :class="{ 'opacity-60 cursor-not-allowed': isLiking }"
         >
           <div
-            class="p-2 rounded-full group-hover:bg-red-50 group-hover:text-red-500 transition"
+            class="relative flex items-center justify-center p-2 rounded-full group-hover:bg-red-50 group-hover:text-red-500 transition"
             :class="localLikedByMe ? 'text-red-500' : ''"
           >
-            <Heart class="w-5 h-5" :class="localLikedByMe ? 'fill-current' : ''" />
+            <Heart class="w-5 h-5 relative z-10" :class="localLikedByMe ? 'fill-current' : ''" />
+            <div 
+              v-for="p in heartParticles" 
+              :key="p.id"
+              class="absolute pointer-events-none text-red-500 flex items-center justify-center animate-particle"
+              :style="`--tx: ${p.x}px; --ty: ${p.y}px; --rot: ${p.rot}deg; --scale: ${p.scale};`"
+            >
+              <Heart class="w-4 h-4 fill-current" />
+            </div>
           </div>
           <span
             class="text-sm font-medium pl-1 group-hover:text-red-500 transition"
@@ -234,6 +242,38 @@ watch(
   },
 )
 
+interface HeartParticle {
+  id: number
+  x: number
+  y: number
+  rot: number
+  scale: number
+}
+const heartParticles = ref<HeartParticle[]>([])
+
+const spawnHeartParticles = () => {
+  for (let i = 0; i < 8; i++) {
+    // 1.5x wider cone (from 60-120 to 45-135 degrees)
+    const angle = (Math.random() * 90 + 45) * (Math.PI / 180)
+    const velocity = Math.random() * 20 + 15 // Reduced height by half
+    const tx = Math.cos(angle) * velocity
+    const ty = -Math.sin(angle) * velocity - 10 // Reduced base upward offset
+
+    const id = Date.now() + i + Math.random()
+    heartParticles.value.push({
+      id,
+      x: tx,
+      y: ty,
+      rot: Math.random() * 60 - 30,
+      scale: Math.random() * 0.5 + 0.5
+    })
+
+    setTimeout(() => {
+      heartParticles.value = heartParticles.value.filter(p => p.id !== id)
+    }, 1000)
+  }
+}
+
 const toggleLike = async () => {
   if (!authStore.isAuthenticated) {
     showAlert('로그인이 필요합니다.', 'info')
@@ -248,6 +288,10 @@ const toggleLike = async () => {
   localLikedByMe.value = !prevLiked
   localLikeCount.value = prevLiked ? prevCount - 1 : prevCount + 1
   isLiking.value = true
+
+  if (!prevLiked) {
+    spawnHeartParticles()
+  }
 
   try {
     const res = prevLiked
@@ -381,5 +425,19 @@ const formatDate = (dateString: string) => {
     max-width: 448px; /* max-w-md */
     transform: translateX(0);
   }
+}
+
+@keyframes particle {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(var(--scale));
+    opacity: 0;
+  }
+}
+.animate-particle {
+  animation: particle 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 </style>

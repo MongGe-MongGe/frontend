@@ -1,65 +1,47 @@
 <template>
-  <div
-    class="h-full w-full max-w-[1080px] mx-auto flex flex-col bg-white border-x border-gray-100 shadow-sm"
-  >
-    <!-- Header -->
-    <header class="h-16 bg-white border-b border-gray-100 shrink-0 sticky top-0 z-10">
-      <div class="h-full px-4 sm:px-6 w-full flex items-center justify-between">
-        <h1 class="text-xl font-bold text-gray-900">게시판</h1>
-        <button
-          v-if="isAdmin"
-          @click="goToCreate"
-          class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"
-        >
-          글쓰기
-        </button>
-      </div>
-    </header>
+  <div class="flex justify-center w-full min-h-screen pb-10 mt-6 px-4">
+    <div class="flex flex-col lg:flex-row gap-4 transition-all duration-300 w-full max-w-[1250px] justify-center items-start">
+      <!-- Left Pane: Post List -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm w-full max-w-md shrink-0 flex flex-col h-[650px] mx-auto lg:mx-0">
+        <!-- Header -->
+        <header class="flex items-center justify-between p-4 border-b border-gray-100 bg-white z-10 shrink-0">
+          <h1 class="text-lg font-bold text-gray-900">게시판</h1>
+          <button
+            v-if="isAdmin"
+            @click="goToCreate"
+            class="bg-gray-900 hover:bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-sm"
+          >
+            글쓰기
+          </button>
+        </header>
 
-    <!-- Main Content -->
-    <div class="flex-1 overflow-hidden p-4 sm:p-6 w-full bg-gray-50">
-      <div class="h-full w-full flex flex-row gap-6">
-        <!-- Left Pane: Post List -->
-        <div class="w-[400px] shrink-0 flex flex-col gap-4 overflow-y-auto no-scrollbar pb-6 pr-2">
+        <div class="flex-1 overflow-y-auto no-scrollbar p-3 bg-gray-50 flex flex-col gap-3 relative">
           <div v-if="loading" class="flex justify-center py-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
 
           <div
             v-else-if="posts.length === 0"
-            class="bg-white rounded-2xl p-10 text-center shadow-sm border border-gray-100 shrink-0"
+            class="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-100 shrink-0 mt-4 mx-2"
           >
-            <svg
-              class="w-16 h-16 text-gray-300 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              ></path>
-            </svg>
-            <p class="text-gray-500 font-medium">아직 등록된 게시글이 없습니다.</p>
+            <p class="text-gray-500 text-sm font-medium">아직 등록된 게시글이 없습니다.</p>
           </div>
 
-          <div v-else class="flex flex-col gap-4 w-full shrink-0">
+          <div v-else class="flex flex-col gap-3 w-full shrink-0">
             <div
               v-for="post in posts"
               :key="post.id"
-              class="bg-white rounded-xl p-5 shadow-sm border flex flex-col gap-2 transition-all cursor-pointer w-full"
+              class="bg-white rounded-xl p-4 shadow-sm border flex flex-col gap-2 transition-all cursor-pointer w-full group"
               :class="
                 selectedPost?.id === post.id
-                  ? 'border-primary ring-1 ring-primary shadow-md'
-                  : 'border-gray-100 hover:shadow-md'
+                  ? 'border-gray-400 ring-1 ring-gray-400 shadow-md'
+                  : 'border-gray-100 hover:border-gray-300 hover:shadow-md'
               "
               @click="openPost(post)"
             >
               <div class="flex items-center justify-between">
                 <span
-                  class="px-2.5 py-1 text-xs font-semibold rounded-full"
+                  class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                   :class="
                     post.category === 'Notice'
                       ? 'bg-red-50 text-red-600'
@@ -70,25 +52,20 @@
                 </span>
                 <span class="text-xs text-gray-400">{{ formatDate(post.createdAt) }}</span>
               </div>
-              <h2 class="text-lg font-bold text-gray-900 line-clamp-1">{{ post.title }}</h2>
-              <div class="text-xs text-gray-400 mt-2">작성자: {{ post.authorNickname }}</div>
+              <h2 class="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">{{ post.title }}</h2>
+              <div class="text-[11px] text-gray-400 mt-1">작성자: {{ post.authorNickname }}</div>
             </div>
           </div>
 
           <!-- Pagination -->
-          <div v-if="totalPages > 1" class="flex justify-center mt-6 gap-2 shrink-0">
+          <div v-if="totalPages > 1" class="flex justify-center mt-4 mb-4 gap-1 shrink-0">
             <button
               @click="changePage(currentPage - 1)"
               :disabled="currentPage === 1"
-              class="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 19l-7-7 7-7"
-                ></path>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </button>
 
@@ -96,11 +73,11 @@
               v-for="page in totalPages"
               :key="page"
               @click="changePage(page)"
-              class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition-colors"
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-colors shadow-sm"
               :class="
                 currentPage === page
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
               "
             >
               {{ page }}
@@ -109,108 +86,74 @@
             <button
               @click="changePage(currentPage + 1)"
               :disabled="currentPage === totalPages"
-              class="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                ></path>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </button>
           </div>
         </div>
+      </div>
 
-        <!-- Right Pane: Detail View -->
+      <!-- Right Pane: Detail View -->
+      <Transition name="slide-out">
         <div
-          class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full"
+          v-if="selectedPost"
+          class="bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-md shrink-0 mx-auto lg:mx-0 flex flex-col overflow-hidden h-[650px]"
         >
-          <div v-if="selectedPost" class="flex flex-col h-full overflow-hidden">
-            <div class="p-6 border-b border-gray-100 flex flex-col gap-4 shrink-0">
-              <div class="flex items-center justify-between">
-                <span
-                  class="px-3 py-1 text-xs font-semibold rounded-full"
-                  :class="
-                    selectedPost.category === 'Notice'
-                      ? 'bg-red-50 text-red-600'
-                      : 'bg-green-50 text-green-600'
-                  "
-                >
-                  {{ selectedPost.category === 'Notice' ? '공지사항' : '이벤트' }}
-                </span>
-                <div class="flex items-center gap-2">
-                  <template v-if="isAdmin">
-                    <button
-                      @click="goToEdit(selectedPost)"
-                      class="px-3 py-1 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-                    >
-                      수정
-                    </button>
-                    <button
-                      @click="deletePost(selectedPost)"
-                      class="px-3 py-1 text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                    >
-                      삭제
-                    </button>
-                  </template>
-                  <button
-                    @click="selectedPost = null"
-                    class="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      ></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <h2 class="text-2xl font-bold text-gray-900">{{ selectedPost.title }}</h2>
-              <div class="flex justify-between items-center text-sm text-gray-500">
-                <span
-                  >작성자:
-                  <span class="font-medium text-gray-700">{{
-                    selectedPost.authorNickname
-                  }}</span></span
-                >
-                <span>{{ formatDate(selectedPost.createdAt) }}</span>
-              </div>
+          <div class="p-5 border-b border-gray-100 flex flex-col gap-3 shrink-0 relative">
+            <button
+              @click="selectedPost = null"
+              class="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+            <div class="pr-8">
+              <span
+                class="inline-block px-2 py-0.5 text-[10px] font-bold rounded-full mb-2"
+                :class="
+                  selectedPost.category === 'Notice'
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-green-50 text-green-600'
+                "
+              >
+                {{ selectedPost.category === 'Notice' ? '공지사항' : '이벤트' }}
+              </span>
+              <h2 class="text-xl font-bold text-gray-900 leading-tight">{{ selectedPost.title }}</h2>
+            </div>
+            
+            <div class="flex justify-between items-center text-xs text-gray-500 mt-2">
+              <span>작성자: <span class="font-medium text-gray-700">{{ selectedPost.authorNickname }}</span></span>
+              <span>{{ formatDate(selectedPost.createdAt) }}</span>
             </div>
 
-            <div
-              class="p-6 overflow-y-auto flex-1 prose prose-sm sm:prose max-w-none prose-img:rounded-xl prose-a:text-primary"
-            >
-              <div v-if="selectedPost.content" v-html="selectedPost.content"></div>
-              <div v-else class="text-gray-500 italic">게시글 본문이 비어있습니다.</div>
+            <div v-if="isAdmin" class="flex items-center gap-2 mt-2 pt-3 border-t border-gray-50">
+              <button
+                @click="goToEdit(selectedPost)"
+                class="px-3 py-1 text-[11px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+              >
+                수정
+              </button>
+              <button
+                @click="deletePost(selectedPost)"
+                class="px-3 py-1 text-[11px] font-bold bg-red-50 hover:bg-red-100 text-red-600 rounded-md transition-colors"
+              >
+                삭제
+              </button>
             </div>
           </div>
 
           <div
-            v-else
-            class="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50/30"
+            class="p-5 overflow-y-auto flex-1 prose prose-sm max-w-none prose-img:rounded-xl prose-a:text-primary"
           >
-            <svg
-              class="w-16 h-16 mb-4 text-gray-200"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5L16.5 4H12"
-              ></path>
-            </svg>
-            <p class="font-medium">좌측 목록에서 게시글을 선택해 주세요.</p>
+            <div v-if="selectedPost.content" v-html="selectedPost.content"></div>
+            <div v-else class="text-gray-400 italic text-sm text-center py-10">게시글 본문이 비어있습니다.</div>
           </div>
         </div>
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -324,3 +267,45 @@ const formatDate = (dateStr: string) => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 </script>
+
+<style scoped>
+.slide-out-enter-active,
+.slide-out-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+/* Mobile (column): slide down */
+@media (max-width: 1023px) {
+  .slide-out-enter-from,
+  .slide-out-leave-to {
+    opacity: 0;
+    max-height: 0 !important;
+    transform: translateY(-20px);
+    margin-top: -1rem; /* cancel gap */
+  }
+  .slide-out-enter-to,
+  .slide-out-leave-from {
+    opacity: 1;
+    max-height: 650px;
+    transform: translateY(0);
+  }
+}
+
+/* Desktop (row): slide right */
+@media (min-width: 1024px) {
+  .slide-out-enter-from,
+  .slide-out-leave-to {
+    opacity: 0;
+    max-width: 0 !important;
+    transform: translateX(-50px);
+    margin-left: -1rem; /* cancel gap */
+  }
+  .slide-out-enter-to,
+  .slide-out-leave-from {
+    opacity: 1;
+    max-width: 448px; /* max-w-md */
+    transform: translateX(0);
+  }
+}
+</style>
