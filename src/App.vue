@@ -17,6 +17,10 @@
         <router-view />
       </div>
     </main>
+
+    <!-- Global overlays -->
+    <AppToast />
+    <AppConfirm />
   </div>
 </template>
 
@@ -24,6 +28,8 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import RootSidebar from './components/common/RootSidebar.vue'
+import AppToast from './components/common/AppToast.vue'
+import AppConfirm from './components/common/AppConfirm.vue'
 
 const route = useRoute()
 const isFullWidthRoute = computed(() =>
@@ -35,6 +41,7 @@ const showSidebar = computed(
   () => !['login', 'signup', 'not-found', 'forbidden', 'catch-all'].includes(route.name as string),
 )
 </script>
+
 
 <style scoped>
 /* 스크롤 바 숨기기 */

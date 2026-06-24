@@ -1,216 +1,147 @@
 <template>
-  <aside
-    class="h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-50 shrink-0 overflow-hidden"
-    :class="effectiveIsExpanded ? 'w-64' : 'w-20'"
-  >
-    <!-- Header / Logo Area -->
-    <div class="h-16 flex items-center border-b border-gray-100">
-      <div class="w-20 shrink-0 flex justify-center items-center">
-        <button
-          @click="toggleSidebar"
-          class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              v-if="!effectiveIsExpanded"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            ></path>
-            <path
-              v-else
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h7"
-            ></path>
-          </svg>
-        </button>
-      </div>
-      <h1
-        class="text-xl font-extrabold text-primary whitespace-nowrap transition-opacity duration-300"
-        :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-      >
-        구루밍
-      </h1>
+  <!-- 항상 아이콘 전용(w-16) 고정 너비, 토글 없음 -->
+  <aside class="h-full w-16 bg-white border-r border-gray-200 flex flex-col z-50 shrink-0">
+
+    <!-- Header / Logo -->
+    <div class="h-16 flex items-center justify-center border-b border-gray-100">
+      <router-link to="/" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="홈">
+        <AppLogo size="sm" />
+      </router-link>
     </div>
 
     <!-- Navigation Links -->
-    <nav class="flex-1 py-6 flex flex-col gap-2 px-2">
-      <router-link
-        to="/"
-        class="flex items-center rounded-xl text-gray-600 hover:bg-blue-50 hover:text-primary transition-colors overflow-hidden h-12"
-        active-class="bg-blue-50 text-primary font-bold"
-      >
-        <div class="w-16 shrink-0 flex justify-center items-center h-full">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-            ></path>
-          </svg>
-        </div>
-        <span
-          class="whitespace-nowrap transition-opacity duration-300"
-          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-          >홈</span
-        >
-      </router-link>
+    <nav class="flex-1 py-4 flex flex-col gap-1 px-2">
 
-      <router-link
-        to="/explore"
-        class="flex items-center rounded-xl text-gray-600 hover:bg-blue-50 hover:text-primary transition-colors overflow-hidden h-12"
-        active-class="bg-blue-50 text-primary font-bold"
-      >
-        <div class="w-16 shrink-0 flex justify-center items-center h-full">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
-        </div>
-        <span
-          class="whitespace-nowrap transition-opacity duration-300"
-          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-          >탐색</span
-        >
-      </router-link>
+      <!-- 탐색 -->
+      <SidebarItem to="/explore" label="탐색">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </SidebarItem>
 
-      <router-link
-        to="/map"
-        class="flex items-center rounded-xl text-gray-600 hover:bg-blue-50 hover:text-primary transition-colors overflow-hidden h-12"
-        active-class="bg-blue-50 text-primary font-bold"
-      >
-        <div class="w-16 shrink-0 flex justify-center items-center h-full">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-            ></path>
-          </svg>
-        </div>
-        <span
-          class="whitespace-nowrap transition-opacity duration-300"
-          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-          >지도</span
-        >
-      </router-link>
+      <!-- 지도 -->
+      <SidebarItem to="/map" label="지도">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+      </SidebarItem>
 
-      <router-link
-        to="/board"
-        class="flex items-center rounded-xl text-gray-600 hover:bg-blue-50 hover:text-primary transition-colors overflow-hidden h-12"
-        active-class="bg-blue-50 text-primary font-bold"
-      >
-        <div class="w-16 shrink-0 flex justify-center items-center h-full">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
-            ></path>
-          </svg>
-        </div>
-        <span
-          class="whitespace-nowrap transition-opacity duration-300"
-          :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-          >게시판</span
-        >
-      </router-link>
+      <!-- 게시판 -->
+      <SidebarItem to="/board" label="게시판">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+      </SidebarItem>
+
     </nav>
 
-    <!-- Bottom Auth links -->
-    <div class="p-2 border-t border-gray-100 flex flex-col gap-2">
+    <!-- Bottom: Profile / Login -->
+    <div class="p-2 border-t border-gray-100 flex flex-col gap-1">
+
+      <!-- 로그인된 상태 -->
       <template v-if="authStore.token">
-        <!-- 마이 페이지 버튼 -->
         <router-link
           v-if="authStore.user?.handle"
           :to="`/users/${authStore.user.handle}`"
-          class="flex items-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors overflow-hidden h-12"
-          active-class="bg-blue-50 text-primary font-bold"
+          class="relative flex items-center justify-center h-12 rounded-xl hover:bg-gray-100 transition-colors group"
+          active-class="bg-blue-50"
+          :aria-label="authStore.user.nickname || '마이 페이지'"
         >
-          <div class="w-16 shrink-0 flex justify-center items-center h-full">
+          <!-- 프로필 이미지 -->
+          <div class="relative">
             <img
               :src="authStore.user?.profileImage || '/default_profile_image.png'"
               @error="(e) => ((e.target as HTMLImageElement).src = '/default_profile_image.png')"
               alt="프로필 이미지"
               class="w-8 h-8 rounded-full object-cover border border-gray-200"
             />
-          </div>
-          <span
-            class="whitespace-nowrap font-medium transition-opacity duration-300 flex items-center gap-1"
-            :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-          >
-            마이 페이지
+            <!-- Admin 왕관 -->
             <Crown
               v-if="authStore.user?.role?.includes('ADMIN')"
-              class="w-4 h-4 text-yellow-500 fill-yellow-500"
+              class="absolute -top-1.5 -left-1.5 w-4 h-4 text-yellow-500 fill-yellow-400 drop-shadow -rotate-45"
             />
+          </div>
+
+          <!-- 툴팁 -->
+          <span
+            class="pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-lg flex items-center gap-1.5"
+          >
+            {{ authStore.user?.nickname || '마이 페이지' }}
+            <Crown v-if="authStore.user?.role?.includes('ADMIN')" class="w-3 h-3 text-yellow-400 fill-yellow-400" />
           </span>
         </router-link>
       </template>
 
+      <!-- 비로그인 상태 -->
       <template v-else>
-        <!-- 로그인 버튼 -->
         <router-link
           to="/login"
-          class="flex items-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors overflow-hidden h-12"
+          class="relative flex items-center justify-center h-12 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors group"
+          aria-label="로그인"
         >
-          <div class="w-16 shrink-0 flex justify-center items-center h-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-              ></path>
-            </svg>
-          </div>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
           <span
-            class="whitespace-nowrap font-medium transition-opacity duration-300"
-            :class="effectiveIsExpanded ? 'opacity-100' : 'opacity-0'"
-            >로그인</span
-          >
+            class="pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-lg"
+          >로그인</span>
         </router-link>
       </template>
+
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { defineComponent, h, resolveComponent } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRoute } from 'vue-router'
 import { Crown } from 'lucide-vue-next'
+import AppLogo from '@/components/common/AppLogo.vue'
+import { RouterLink } from 'vue-router'
 
 const authStore = useAuthStore()
-const route = useRoute()
 
-const isExpanded = ref(false)
-
-const effectiveIsExpanded = computed(() => {
-  if (route.name === 'map') return false
-  return isExpanded.value
+/**
+ * SidebarItem — 아이콘 버튼 + 우측 툴팁을 묶은 인라인 컴포넌트
+ * (파일을 분리하지 않아도 되도록 defineComponent로 로컬 정의)
+ */
+const SidebarItem = defineComponent({
+  name: 'SidebarItem',
+  props: {
+    to: { type: String, required: true },
+    label: { type: String, required: true },
+  },
+  setup(props, { slots }) {
+    return () =>
+      h(
+        RouterLink,
+        {
+          to: props.to,
+          class:
+            'relative flex items-center justify-center h-12 rounded-xl text-gray-600 hover:bg-blue-50 hover:text-primary transition-colors group',
+          activeClass: 'bg-blue-50 text-primary',
+          ariaLabel: props.label,
+        },
+        {
+          default: () => [
+            // Icon slot
+            h('span', { class: 'w-6 h-6' }, slots.default?.()),
+            // Tooltip
+            h(
+              'span',
+              {
+                class:
+                  'pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-lg',
+              },
+              props.label,
+            ),
+          ],
+        },
+      )
+  },
 })
-
-onMounted(() => {
-  const savedState = localStorage.getItem('sidebarExpanded')
-  if (savedState) {
-    isExpanded.value = savedState === 'true'
-  }
-})
-
-const toggleSidebar = () => {
-  if (route.name === 'map') return
-  isExpanded.value = !isExpanded.value
-  localStorage.setItem('sidebarExpanded', String(isExpanded.value))
-}
 </script>

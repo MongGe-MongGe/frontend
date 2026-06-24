@@ -74,7 +74,10 @@ export const useFeedStore = defineStore('feed', () => {
       await deleteReview(reviewId)
       // Remove from all contexts
       for (const key in contexts.value) {
-        contexts.value[key].items = contexts.value[key].items.filter(item => item.id !== reviewId)
+        const ctx = contexts.value[key]
+        if (ctx) {
+          ctx.items = ctx.items.filter(item => item.id !== reviewId)
+        }
       }
     } catch (err) {
       console.error('Failed to delete review', err)
@@ -85,9 +88,12 @@ export const useFeedStore = defineStore('feed', () => {
   const updateFeedLocally = (updatedFeed: any) => {
     // Update the item in all contexts where it exists
     for (const key in contexts.value) {
-      const idx = contexts.value[key].items.findIndex(item => item.id === updatedFeed.id)
-      if (idx !== -1) {
-        contexts.value[key].items[idx] = { ...contexts.value[key].items[idx], ...updatedFeed }
+      const ctx = contexts.value[key]
+      if (ctx) {
+        const idx = ctx.items.findIndex(item => item.id === updatedFeed.id)
+        if (idx !== -1) {
+          ctx.items[idx] = { ...ctx.items[idx], ...updatedFeed }
+        }
       }
     }
   }
@@ -99,6 +105,20 @@ export const useFeedStore = defineStore('feed', () => {
     }
   }
 
+  // 좋아요 상태를 모든 컨텍스트에 걸쳐 동기화한다
+  const updateLikeLocally = (reviewId: string, likedByMe: boolean, likeCount: number) => {
+    for (const key in contexts.value) {
+      const ctx = contexts.value[key]
+      if (ctx) {
+        const item = ctx.items.find((i) => i.id === reviewId)
+        if (item) {
+          item.likedByMe = likedByMe
+          item.likeCount = likeCount
+        }
+      }
+    }
+  }
+
   return {
     contexts,
     getContext,
@@ -106,6 +126,7 @@ export const useFeedStore = defineStore('feed', () => {
     loadUserReviews,
     removeFeed,
     updateFeedLocally,
-    prependFeedLocally
+    updateLikeLocally,
+    prependFeedLocally,
   }
 })

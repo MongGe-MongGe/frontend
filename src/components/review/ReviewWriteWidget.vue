@@ -125,6 +125,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useFeedStore } from '@/stores/feed'
+import { useAlert } from '@/composables/useAlert'
 import PlaceSearchModal from '@/components/common/PlaceSearchModal.vue'
 import { createReview, updateReview } from '@/api/review'
 import { uploadImage } from '@/api/user'
@@ -137,6 +139,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['success'])
+
+const feedStore = useFeedStore()
+const { showAlert } = useAlert()
 
 const isOpen = ref(false)
 const isEdit = ref(false)
@@ -204,7 +209,7 @@ const handleFileChange = (e: Event) => {
   const newFiles = Array.from(target.files)
   
   if (images.value.length + newFiles.length > 6) {
-    alert('이미지는 최대 6장까지 첨부할 수 있습니다.')
+    showAlert('이미지는 최대 6장까지 첨부할 수 있습니다.', 'warning')
     return
   }
 
@@ -253,7 +258,8 @@ const submitReview = async () => {
     }
 
     if (isEdit.value && editingId.value) {
-      await updateReview(editingId.value, payload)
+      const updated = await updateReview(editingId.value, payload)
+      feedStore.updateFeedLocally(updated)
     } else {
       payload.place = {
         id: selectedPlace.value.id,
@@ -265,15 +271,19 @@ const submitReview = async () => {
         y: selectedPlace.value.y,
         placeUrl: selectedPlace.value.place_url || selectedPlace.value.url
       }
-      await createReview(payload)
+      const created = await createReview(payload)
+      feedStore.prependFeedLocally(created, ['home'])
     }
 
     closeModal()
     emit('success')
-    window.location.reload()
+    showAlert(
+      isEdit.value ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다.',
+      'success',
+    )
   } catch (error) {
     console.error('Failed to submit review', error)
-    alert('리뷰 작성에 실패했습니다.')
+    showAlert('리뷰 저장에 실패했습니다. 다시 시도해주세요.', 'error')
   } finally {
     isSubmitting.value = false
   }

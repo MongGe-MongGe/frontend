@@ -127,11 +127,22 @@
     <div class="px-2 pb-2 flex items-center justify-between text-gray-500 border-t border-gray-50 pt-2">
       <div class="flex items-center space-x-6">
         <!-- Like -->
-        <button class="flex items-center group transition">
-          <div class="p-2 rounded-full group-hover:bg-red-50 group-hover:text-red-500 transition" :class="{'text-red-500': feed.likedByMe}">
-            <Heart class="w-5 h-5" :class="{'fill-current': feed.likedByMe}" />
+        <button
+          @click="toggleLike"
+          :disabled="isLiking"
+          class="flex items-center group transition"
+          :class="{ 'opacity-60 cursor-not-allowed': isLiking }"
+        >
+          <div
+            class="p-2 rounded-full group-hover:bg-red-50 group-hover:text-red-500 transition"
+            :class="localLikedByMe ? 'text-red-500' : ''"
+          >
+            <Heart class="w-5 h-5" :class="localLikedByMe ? 'fill-current' : ''" />
           </div>
-          <span class="text-sm font-medium pl-1 group-hover:text-red-500 transition" :class="{'text-red-500': feed.likedByMe}">{{ feed.likeCount || 0 }}</span>
+          <span
+            class="text-sm font-medium pl-1 group-hover:text-red-500 transition"
+            :class="localLikedByMe ? 'text-red-500' : ''"
+          >{{ localLikeCount }}</span>
         </button>
 
         <!-- Comment -->
@@ -141,8 +152,6 @@
           </div>
           <span class="text-sm font-medium pl-1 group-hover:text-blue-500 transition">{{ feed.commentCount || 0 }}</span>
         </button>
-
-        <!-- Place Save (Bookmark) was moved to Place Info Box -->
       </div>
       
       <!-- Date & User Rating Stars -->
@@ -185,7 +194,11 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useFeedStore } from '@/stores/feed'
+import { useAlert } from '@/composables/useAlert'
+import { useConfirm } from '@/composables/useConfirm'
 import { followUser, unfollowUser } from '@/api/user'
+import { likeReview, unlikeReview } from '@/api/review'
 import { MoreHorizontal, ChevronLeft, ChevronRight, MapPin, Star, Heart, MessageCircle, Bookmark } from 'lucide-vue-next'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
 import CommentBox from '@/components/review/CommentBox.vue'
@@ -198,15 +211,66 @@ const emit = defineEmits(['edit', 'delete'])
 
 const router = useRouter()
 const authStore = useAuthStore()
+const feedStore = useFeedStore()
+const { showAlert } = useAlert()
+const { confirm } = useConfirm()
 
 const currentImageIndex = ref(0)
 const isDropdownOpen = ref(false)
 const isSaveModalOpen = ref(false)
 const isCommentOpen = ref(false)
+const isLiking = ref(false)
+
+// 로컬 좋아요 상태 (Optimistic UI용)
+const localLikedByMe = ref(props.feed.likedByMe ?? false)
+const localLikeCount = ref(props.feed.likeCount ?? 0)
+
+// 서버에서 데이터가 새로 오면 로컬 상태도 동기화
+watch(
+  () => [props.feed.likedByMe, props.feed.likeCount],
+  ([likedByMe, likeCount]) => {
+    localLikedByMe.value = likedByMe ?? false
+    localLikeCount.value = likeCount ?? 0
+  },
+)
+
+const toggleLike = async () => {
+  if (!authStore.isAuthenticated) {
+    showAlert('로그인이 필요합니다.', 'info')
+    return
+  }
+  if (isLiking.value) return
+
+  const prevLiked = localLikedByMe.value
+  const prevCount = localLikeCount.value
+
+  // Optimistic update
+  localLikedByMe.value = !prevLiked
+  localLikeCount.value = prevLiked ? prevCount - 1 : prevCount + 1
+  isLiking.value = true
+
+  try {
+    const res = prevLiked
+      ? await unlikeReview(props.feed.id)
+      : await likeReview(props.feed.id)
+    // 서버 응답 기준으로 확정
+    localLikedByMe.value = res.likedByMe
+    localLikeCount.value = res.likeCount
+    feedStore.updateLikeLocally(props.feed.id, res.likedByMe, res.likeCount)
+  } catch (error) {
+    // 실패 시 롤백
+    localLikedByMe.value = prevLiked
+    localLikeCount.value = prevCount
+    console.error('Like toggle error:', error)
+    showAlert('좋아요 처리에 실패했습니다.', 'error')
+  } finally {
+    isLiking.value = false
+  }
+}
 
 const openSaveModal = () => {
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    showAlert('로그인이 필요합니다.', 'info')
     return
   }
   isSaveModalOpen.value = true
@@ -232,16 +296,22 @@ const handleEdit = () => {
   emit('edit', props.feed)
 }
 
-const handleDelete = () => {
+const handleDelete = async () => {
   isDropdownOpen.value = false
-  if (confirm('이 리뷰를 삭제하시겠습니까?')) {
+  const ok = await confirm({
+    title: '리뷰 삭제',
+    message: '이 리뷰를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.',
+    confirmText: '삭제',
+    danger: true,
+  })
+  if (ok) {
     emit('delete', props.feed.id)
   }
 }
 
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    showAlert('로그인이 필요합니다.', 'info')
     return
   }
   try {
@@ -254,7 +324,7 @@ const toggleFollow = async () => {
     }
   } catch (error) {
     console.error('Follow toggle error:', error)
-    alert('팔로우 상태를 변경할 수 없습니다.')
+    showAlert('팔로우 상태를 변경할 수 없습니다.', 'error')
   }
 }
 

@@ -28,3 +28,13 @@ export const getUserReviews = async (userId: string, page: number = 0, size: num
   })
   return response.data
 }
+
+export const likeReview = async (reviewId: string) => {
+  const response = await apiClient.post(`/reviews/${reviewId}/likes`)
+  return response.data // { reviewId, likedByMe, likeCount }
+}
+
+export const unlikeReview = async (reviewId: string) => {
+  const response = await apiClient.delete(`/reviews/${reviewId}/likes`)
+  return response.data // { reviewId, likedByMe, likeCount }
+}

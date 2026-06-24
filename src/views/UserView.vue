@@ -279,6 +279,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFeedStore } from '@/stores/feed'
+import { useAlert } from '@/composables/useAlert'
+import { useConfirm } from '@/composables/useConfirm'
 import { getUserProfile, followUser, unfollowUser } from '@/api/user'
 import { getUserGroups, deleteGroup, updateGroup, createGroup } from '@/api/group'
 import { getGroupGoodPlaces, deleteGoodPlaceFromGroup } from '@/api/goodPlace'
@@ -291,6 +293,8 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const feedStore = useFeedStore()
+const { showAlert } = useAlert()
+const { confirm } = useConfirm()
 
 const writeWidget = ref<any>(null)
 
@@ -325,10 +329,11 @@ const handleCreateGroup = async () => {
     isCreatingGroup.value = true
     await createGroup(newGroupName.value.trim())
     newGroupName.value = ''
+    showAlert('그룹이 생성되었습니다.', 'success')
     await loadUserGroups() // 새로 생성된 그룹 반영
   } catch (error) {
     console.error('Failed to create group', error)
-    alert('그룹 생성에 실패했습니다.')
+    showAlert('그룹 생성에 실패했습니다.', 'error')
   } finally {
     isCreatingGroup.value = false
   }
@@ -386,14 +391,21 @@ const handleEditGroupSave = async (group: any) => {
     const updatedGroup = await updateGroup(group.id, newName)
     group.name = updatedGroup.name
     handleEditGroupCancel()
+    showAlert('그룹 이름이 수정되었습니다.', 'success')
   } catch (error) {
     console.error('Failed to update group name', error)
-    alert('그룹 이름 수정에 실패했습니다.')
+    showAlert('그룹 이름 수정에 실패했습니다.', 'error')
   }
 }
 
 const handleDeleteGroup = async (groupId: string) => {
-  if (!confirm('정말로 이 그룹을 삭제하시겠습니까? 저장된 장소 정보도 함께 그룹에서 해제됩니다.')) return
+  const ok = await confirm({
+    title: '그룹 삭제',
+    message: '정말로 이 그룹을 삭제하시겠습니까?\n저장된 장소 정보도 함께 그룹에서 해제됩니다.',
+    confirmText: '삭제',
+    danger: true,
+  })
+  if (!ok) return
   
   try {
     await deleteGroup(groupId)
@@ -401,14 +413,21 @@ const handleDeleteGroup = async (groupId: string) => {
     if (selectedGroupId.value === groupId) {
       selectedGroupId.value = null
     }
+    showAlert('그룹이 삭제되었습니다.', 'success')
   } catch (error) {
     console.error('Failed to delete group', error)
-    alert('그룹 삭제에 실패했습니다.')
+    showAlert('그룹 삭제에 실패했습니다.', 'error')
   }
 }
 
 const handleDeletePlace = async (groupId: string, placeId: string) => {
-  if (!confirm('이 장소를 그룹에서 저장 취소하시겠습니까?')) return
+  const ok = await confirm({
+    title: '장소 저장 취소',
+    message: '이 장소를 그룹에서 저장 취소하시겠습니까?',
+    confirmText: '저장 취소',
+    danger: true,
+  })
+  if (!ok) return
   
   try {
     await deleteGoodPlaceFromGroup(groupId, placeId)
@@ -419,9 +438,10 @@ const handleDeletePlace = async (groupId: string, placeId: string) => {
     if (group) {
       group.goodPlaceCount--
     }
+    showAlert('장소 저장이 취소되었습니다.', 'info')
   } catch (error) {
     console.error('Failed to delete place from group', error)
-    alert('장소 저장 취소에 실패했습니다.')
+    showAlert('장소 저장 취소에 실패했습니다.', 'error')
   }
 }
 
@@ -465,7 +485,7 @@ const closeFollowModal = () => {
 
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    showAlert('로그인이 필요합니다.', 'info')
     return
   }
 
@@ -483,7 +503,7 @@ const toggleFollow = async () => {
     }
   } catch (error) {
     console.error('Follow toggle error:', error)
-    alert('팔로우 상태를 변경할 수 없습니다.')
+    showAlert('팔로우 상태를 변경할 수 없습니다.', 'error')
   }
 }
 

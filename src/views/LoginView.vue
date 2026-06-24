@@ -1,14 +1,20 @@
 <template>
-  <div class="flex-1 flex flex-col items-center justify-center bg-white py-12 px-6">
-    <div class="w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">구루밍 로그인</h2>
-        <p class="mt-2 text-center text-sm text-gray-600">나만의 맛집을 기록하고 공유하세요</p>
+  <div class="min-h-screen w-full flex items-center justify-center bg-gray-50 px-4">
+    <div class="w-full max-w-sm">
+      <!-- Logo + Brand -->
+      <div class="flex flex-col items-center mb-8">
+        <AppLogo size="xl" class="mb-4" />
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">구루밍</h1>
+        <p class="mt-1 text-sm text-gray-500">나만의 맛집을 기록하고 공유하세요</p>
       </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-        <div class="rounded-md shadow-sm -space-y-px">
+
+      <!-- Card -->
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <h2 class="text-lg font-bold text-gray-800 mb-6">로그인</h2>
+        <form @submit.prevent="handleLogin" class="space-y-4">
+          <!-- Email -->
           <div>
-            <label for="email-address" class="sr-only">이메일</label>
+            <label for="email-address" class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">이메일</label>
             <input
               id="email-address"
               name="email"
@@ -16,12 +22,14 @@
               autocomplete="email"
               required
               v-model="email"
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-              placeholder="이메일 주소"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition"
+              placeholder="이메일 주소를 입력하세요"
             />
           </div>
+
+          <!-- Password -->
           <div>
-            <label for="password" class="sr-only">비밀번호</label>
+            <label for="password" class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">비밀번호</label>
             <input
               id="password"
               name="password"
@@ -29,49 +37,28 @@
               autocomplete="current-password"
               required
               v-model="password"
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-              placeholder="비밀번호"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition"
+              placeholder="비밀번호를 입력하세요"
             />
           </div>
-        </div>
 
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-            />
-            <label for="remember-me" class="ml-2 block text-sm text-gray-900"> 아이디 저장 </label>
-          </div>
-
-          <div class="text-sm">
-            <a href="#" class="font-medium text-primary hover:text-blue-500">
-              비밀번호를 잊으셨나요?
-            </a>
-          </div>
-        </div>
-
-        <div v-if="errorMessage" class="text-red-500 text-sm text-center">
-          {{ errorMessage }}
-        </div>
-
-        <div>
+          <!-- Submit -->
           <button
             type="submit"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+            :disabled="isLoading"
+            class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 mt-2"
           >
-            로그인
+            <LoadingSpinner v-if="isLoading" size="sm" class="text-white p-0" />
+            <span>{{ isLoading ? '로그인 중...' : '로그인' }}</span>
           </button>
-        </div>
-      </form>
-      <div class="text-center text-sm">
-        계정이 없으신가요?
-        <router-link to="/signup" class="font-medium text-primary hover:text-blue-500"
-          >회원가입하기</router-link
-        >
+        </form>
       </div>
+
+      <!-- Footer Link -->
+      <p class="text-center text-sm text-gray-500 mt-6">
+        계정이 없으신가요?
+        <router-link to="/signup" class="font-semibold text-blue-600 hover:text-blue-700 ml-1">회원가입하기</router-link>
+      </p>
     </div>
   </div>
 </template>
@@ -80,23 +67,26 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useAlert } from '@/composables/useAlert'
 import http from '@/api/http'
+import AppLogo from '@/components/common/AppLogo.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 const email = ref('')
 const password = ref('')
-const errorMessage = ref('')
+const isLoading = ref(false)
 const router = useRouter()
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const handleLogin = async () => {
-  errorMessage.value = ''
+  isLoading.value = true
   try {
     const response = await http.post('/api/auth/login', {
       email: email.value,
       password: password.value,
     })
 
-    // LoginResponse
     const data = response.data
     authStore.setAuth(data.Token || data.token, {
       id: data.id,
@@ -110,8 +100,12 @@ const handleLogin = async () => {
     router.push('/')
   } catch (error: unknown) {
     const err = error as { response?: { data?: string } }
-    errorMessage.value =
-      err.response?.data || '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'
+    showAlert(
+      err.response?.data || '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
+      'error',
+    )
+  } finally {
+    isLoading.value = false
   }
 }
 </script>

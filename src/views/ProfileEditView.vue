@@ -117,8 +117,6 @@
           ></textarea>
         </div>
 
-        <p v-if="errorMessage" class="text-red-500 text-sm text-center">{{ errorMessage }}</p>
-
         <button
           type="submit"
           class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -135,11 +133,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useAlert } from '@/composables/useAlert'
 import PageContainer from '@/components/common/PageContainer.vue'
 import { updateUserProfile, uploadImage, checkHandle } from '@/api/user'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { showAlert } = useAlert()
 
 const form = ref({
   nickname: '',
@@ -150,7 +150,6 @@ const form = ref({
 
 const isUploading = ref(false)
 const isSubmitting = ref(false)
-const errorMessage = ref('')
 
 const handleMessage = ref('')
 const isHandleAvailable = ref(true)
@@ -179,14 +178,14 @@ const handleImageUpload = async (event: Event) => {
   if (!target.files || target.files.length === 0) return
 
   const file = target.files[0]
+  if (!file) return
 
   try {
     isUploading.value = true
-    errorMessage.value = ''
     const tempUrl = await uploadImage(file)
     form.value.profileImage = tempUrl
   } catch (error) {
-    errorMessage.value = '이미지 업로드에 실패했습니다.'
+    showAlert('이미지 업로드에 실패했습니다.', 'error')
     console.error(error)
   } finally {
     isUploading.value = false
@@ -237,7 +236,6 @@ const handleSubmit = async () => {
 
   try {
     isSubmitting.value = true
-    errorMessage.value = ''
 
     await updateUserProfile(authStore.user.id, {
       nickname: form.value.nickname,
@@ -255,10 +253,11 @@ const handleSubmit = async () => {
       bio: form.value.bio,
     } as unknown as NonNullable<typeof authStore.user>)
 
+    showAlert('프로필이 저장되었습니다.', 'success')
     router.replace(`/users/${form.value.handle}`)
   } catch (error: unknown) {
     const err = error as { response?: { data?: string } }
-    errorMessage.value = err.response?.data || '프로필 수정에 실패했습니다.'
+    showAlert(err.response?.data || '프로필 수정에 실패했습니다.', 'error')
   } finally {
     isSubmitting.value = false
   }
