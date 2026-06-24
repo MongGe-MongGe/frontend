@@ -1,24 +1,37 @@
 <template>
   <aside class="h-full w-80 bg-white border-r border-gray-200 flex flex-col shrink-0 relative">
-    
     <!-- Post-it Tabs -->
     <div class="absolute -right-12 top-4 flex flex-col gap-2 z-40">
-      <button 
+      <button
         @click="activeTab = 'search'"
         class="w-12 h-12 bg-white border-y border-r border-gray-200 rounded-r-xl flex items-center justify-center shadow-sm relative group transition-colors"
-        :class="activeTab === 'search' ? 'text-primary bg-blue-50' : 'text-gray-400 hover:bg-gray-50 hover:text-primary'"
+        :class="
+          activeTab === 'search'
+            ? 'text-primary bg-blue-50'
+            : 'text-gray-400 hover:bg-gray-50 hover:text-primary'
+        "
       >
         <Search class="w-5 h-5" />
-        <span class="absolute left-full ml-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">탐색</span>
+        <span
+          class="absolute left-full ml-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
+          >탐색</span
+        >
       </button>
 
-      <button 
+      <button
         @click="activeTab = 'users'"
         class="w-12 h-12 bg-white border-y border-r border-gray-200 rounded-r-xl flex items-center justify-center shadow-sm relative group transition-colors"
-        :class="activeTab === 'users' ? 'text-primary bg-blue-50' : 'text-gray-400 hover:bg-gray-50 hover:text-primary'"
+        :class="
+          activeTab === 'users'
+            ? 'text-primary bg-blue-50'
+            : 'text-gray-400 hover:bg-gray-50 hover:text-primary'
+        "
       >
         <Users class="w-5 h-5" />
-        <span class="absolute left-full ml-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">맛집 그룹</span>
+        <span
+          class="absolute left-full ml-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
+          >맛집 그룹</span
+        >
       </button>
 
       <!-- Category Filter Buttons -->
@@ -139,7 +152,9 @@
           :disabled="currentPage === 1"
           class="px-3 py-1 text-sm rounded-md transition"
           :class="
-            currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+            currentPage === 1
+              ? 'text-gray-300 cursor-not-allowed'
+              : 'text-gray-600 hover:bg-gray-100'
           "
         >
           이전
@@ -166,18 +181,28 @@
         <div v-if="isLoadingGroups" class="flex justify-center py-10">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-        <div v-else-if="paginatedUserGroups.length === 0" class="text-center text-gray-500 mt-10 text-sm">
+        <div
+          v-else-if="paginatedUserGroups.length === 0"
+          class="text-center text-gray-500 mt-10 text-sm"
+        >
           맛집 그룹이 없습니다.
         </div>
         <template v-else>
-          <div v-for="group in paginatedUserGroups" :key="group.id" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300"
-               :class="expandedGroupId === group.id ? 'ring-1 ring-primary border-primary' : ''">
-            <div 
+          <div
+            v-for="group in paginatedUserGroups"
+            :key="group.id"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300"
+            :class="expandedGroupId === group.id ? 'ring-1 ring-primary border-primary' : ''"
+          >
+            <div
               class="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
               @click="toggleGroupAccordion(group)"
             >
               <div class="flex items-center gap-3 mb-2">
-                <img :src="group.user?.profileImage || '/default_profile_image.png'" class="w-8 h-8 rounded-full object-cover" />
+                <img
+                  :src="group.user?.profileImage || '/default_profile_image.png'"
+                  class="w-8 h-8 rounded-full object-cover"
+                />
                 <div class="flex flex-col">
                   <span class="text-sm font-bold text-gray-900">{{ group.user?.nickname }}</span>
                   <span class="text-xs text-gray-500">{{ group.user?.handle }}</span>
@@ -186,7 +211,10 @@
               <div class="flex items-center justify-between">
                 <h3 class="text-sm font-semibold text-gray-800 truncate">{{ group.name }}</h3>
                 <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{{ group.goodPlaceCount || 0 }}곳</span>
+                  <span
+                    class="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full font-medium"
+                    >{{ group.goodPlaceCount || 0 }}곳</span
+                  >
                   <ChevronDown v-if="expandedGroupId !== group.id" class="w-4 h-4 text-gray-400" />
                   <ChevronUp v-else class="w-4 h-4 text-primary" />
                 </div>
@@ -194,34 +222,83 @@
             </div>
 
             <!-- Accordion Content -->
-            <div v-show="expandedGroupId === group.id" class="border-t border-gray-100 bg-gray-50 p-3 space-y-2 max-h-[300px] overflow-y-auto no-scrollbar">
+            <div
+              v-show="expandedGroupId === group.id"
+              class="border-t border-gray-100 bg-gray-50 p-3 space-y-2 max-h-[300px] overflow-y-auto no-scrollbar"
+            >
               <div v-if="isLoadingGroupPlaces[group.id]" class="flex justify-center py-4">
                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               </div>
-              <div v-else-if="!groupPlacesCache[group.id] || groupPlacesCache[group.id]?.length === 0" class="text-center text-xs text-gray-500 py-4">
+              <div
+                v-else-if="!groupPlacesCache[group.id] || groupPlacesCache[group.id]?.length === 0"
+                class="text-center text-xs text-gray-500 py-4"
+              >
                 저장된 맛집이 없습니다.
               </div>
-              <div 
-                v-else 
-                v-for="place in groupPlacesCache[group.id]" 
+              <div
+                v-else
+                v-for="place in groupPlacesCache[group.id]"
                 :key="place.id"
                 class="bg-white p-2.5 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:border-blue-300 transition"
                 @click="$emit('select-place', mapPlaceToKakaoFormat(place.place || place))"
               >
-                <h4 class="text-xs font-bold text-gray-900 truncate">{{ (place.place || place).name || (place.place || place).placeName }}</h4>
-                <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ (place.place || place).addressName || (place.place || place).address || (place.place || place).roadAddressName }}</p>
-                <p v-if="(place.place || place).categoryName" class="text-[10px] text-blue-500 mt-1">{{ parseCategories((place.place || place).categoryName)[1] || parseCategories((place.place || place).categoryName)[0] }}</p>
+                <h4 class="text-xs font-bold text-gray-900 truncate">
+                  {{ (place.place || place).name || (place.place || place).placeName }}
+                </h4>
+                <p class="text-[10px] text-gray-500 truncate mt-0.5">
+                  {{
+                    (place.place || place).addressName ||
+                    (place.place || place).address ||
+                    (place.place || place).roadAddressName
+                  }}
+                </p>
+                <p
+                  v-if="(place.place || place).categoryName"
+                  class="text-[10px] text-blue-500 mt-1"
+                >
+                  {{
+                    parseCategories((place.place || place).categoryName)[1] ||
+                    parseCategories((place.place || place).categoryName)[0]
+                  }}
+                </p>
               </div>
             </div>
           </div>
         </template>
       </div>
-      
+
       <!-- Groups Pagination -->
-      <div class="flex justify-center items-center space-x-4 py-3 px-4 border-t border-gray-200 bg-white shrink-0" v-if="userGroups.length > 0 && totalGroupPages > 1">
-        <button @click="prevGroupPage" :disabled="currentGroupPage === 1" class="px-3 py-1 text-sm rounded-md transition" :class="currentGroupPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'">이전</button>
-        <span class="text-sm text-gray-600 font-medium">{{ currentGroupPage }} / {{ totalGroupPages }}</span>
-        <button @click="nextGroupPage" :disabled="currentGroupPage === totalGroupPages" class="px-3 py-1 text-sm rounded-md transition" :class="currentGroupPage === totalGroupPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'">다음</button>
+      <div
+        class="flex justify-center items-center space-x-4 py-3 px-4 border-t border-gray-200 bg-white shrink-0"
+        v-if="userGroups.length > 0 && totalGroupPages > 1"
+      >
+        <button
+          @click="prevGroupPage"
+          :disabled="currentGroupPage === 1"
+          class="px-3 py-1 text-sm rounded-md transition"
+          :class="
+            currentGroupPage === 1
+              ? 'text-gray-300 cursor-not-allowed'
+              : 'text-gray-600 hover:bg-gray-100'
+          "
+        >
+          이전
+        </button>
+        <span class="text-sm text-gray-600 font-medium"
+          >{{ currentGroupPage }} / {{ totalGroupPages }}</span
+        >
+        <button
+          @click="nextGroupPage"
+          :disabled="currentGroupPage === totalGroupPages"
+          class="px-3 py-1 text-sm rounded-md transition"
+          :class="
+            currentGroupPage === totalGroupPages
+              ? 'text-gray-300 cursor-not-allowed'
+              : 'text-gray-600 hover:bg-gray-100'
+          "
+        >
+          다음
+        </button>
       </div>
     </template>
   </aside>
@@ -248,11 +325,13 @@ const emit = defineEmits<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (e: 'select-place', place: any): void
   (e: 'update:filterMode', mode: 'all' | 'restaurant' | 'cafe'): void
+  (e: 'tab-change', tab: 'search' | 'users'): void
 }>()
 
 const activeTab = ref<'search' | 'users'>('search')
 
 watch(activeTab, (newTab) => {
+  emit('tab-change', newTab)
   if (newTab === 'users') {
     loadUserGroups()
   }
@@ -307,9 +386,9 @@ watch(
   { deep: true },
 )
 
-
 // --- Users Groups Logic ---
 const isLoadingGroups = ref(false)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const userGroups = ref<any[]>([])
 
 const loadUserGroups = async () => {
@@ -319,7 +398,7 @@ const loadUserGroups = async () => {
   isLoadingGroups.value = true
   try {
     const followingGroupsRes = await getFollowingGroups()
-    
+
     if (Array.isArray(followingGroupsRes)) {
       userGroups.value = followingGroupsRes
     } else {
@@ -344,22 +423,28 @@ const paginatedUserGroups = computed(() => {
   return userGroups.value.slice(start, end)
 })
 
-const nextGroupPage = () => { if (currentGroupPage.value < totalGroupPages.value) currentGroupPage.value++ }
-const prevGroupPage = () => { if (currentGroupPage.value > 1) currentGroupPage.value-- }
+const nextGroupPage = () => {
+  if (currentGroupPage.value < totalGroupPages.value) currentGroupPage.value++
+}
+const prevGroupPage = () => {
+  if (currentGroupPage.value > 1) currentGroupPage.value--
+}
 
 // Accordion Logic
 const expandedGroupId = ref<string | null>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const groupPlacesCache = ref<Record<string, any[]>>({})
 const isLoadingGroupPlaces = ref<Record<string, boolean>>({})
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toggleGroupAccordion = async (group: any) => {
   if (expandedGroupId.value === group.id) {
     expandedGroupId.value = null
     return
   }
-  
+
   expandedGroupId.value = group.id
-  
+
   if (!groupPlacesCache.value[group.id]) {
     isLoadingGroupPlaces.value[group.id] = true
     try {
@@ -375,6 +460,7 @@ const toggleGroupAccordion = async (group: any) => {
 }
 
 // Convert backend place format to kakao map format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapPlaceToKakaoFormat = (place: any) => {
   return {
     id: place.id || place.placeId,
@@ -383,8 +469,7 @@ const mapPlaceToKakaoFormat = (place: any) => {
     category_name: place.categoryName || place.category,
     x: place.x || place.lng,
     y: place.y || place.lat,
-    phone: place.phone
+    phone: place.phone,
   }
 }
-
 </script>

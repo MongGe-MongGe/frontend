@@ -7,6 +7,7 @@
       @update:filterMode="setFilterMode"
       @search="handleSearch"
       @select-place="handleSelectPlace"
+      @tab-change="handleTabChange"
     />
 
     <div class="flex-1 relative h-full w-full">
@@ -15,13 +16,16 @@
         :lat="mapCenter.lat"
         :lng="mapCenter.lng"
         :level="4"
-        :markers="mapMarkers"
+        :markers="
+          activeSidebarTab === 'search'
+            ? mapMarkers
+            : mapMarkers.filter((m) => selectedPlace?.id === m.id)
+        "
         :selected-id="selectedPlace?.id"
         @marker-click="handleMarkerClick"
         @center-changed="handleCenterChanged"
         @bounds-changed="handleBoundsChanged"
       />
-
 
       <!-- Right Top Modal -->
       <div
@@ -514,6 +518,13 @@ const handleBoundsChanged = (bounds: any) => {
 
 const filterMode = ref<'all' | 'restaurant' | 'cafe'>('all')
 const currentKeyword = ref('맛집')
+
+const activeSidebarTab = ref<'search' | 'users'>('search')
+
+const handleTabChange = (tab: 'search' | 'users') => {
+  activeSidebarTab.value = tab
+  selectedPlace.value = null
+}
 
 const setFilterMode = (mode: 'all' | 'restaurant' | 'cafe') => {
   filterMode.value = mode
