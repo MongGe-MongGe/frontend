@@ -19,58 +19,245 @@
         @center-changed="handleCenterChanged"
       />
 
-      <!-- Bottom Sheet (Mock) -->
+      <!-- Right Top Modal -->
       <div
         v-if="selectedPlace"
-        class="absolute bottom-0 w-full bg-white rounded-t-3xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-6 z-10 transition-transform duration-300"
+        class="absolute top-4 right-4 w-[calc(100%-32px)] max-w-md bg-white rounded-2xl shadow-xl p-6 z-10 transition-all duration-300 max-h-[calc(100vh-32px)] flex flex-col"
       >
-        <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex-1 min-w-0 pr-4">
-            <div class="flex items-center gap-2 mb-1">
-              <h2 class="text-xl font-extrabold text-gray-900 truncate">
-                {{ selectedPlace.title }}
-              </h2>
+        <!-- Scrollable Content Area -->
+        <div
+          class="overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        >
+          <div class="flex justify-between items-start mb-4 mt-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <h2 class="text-xl font-extrabold text-gray-900 truncate">
+                  {{ selectedPlace.title }}
+                </h2>
+                <div class="flex space-x-1 ml-auto shrink-0 items-center">
+                  <!-- Bookmark Button -->
+                  <div class="relative group flex items-center justify-center">
+                    <button
+                      @click="openSaveModal"
+                      class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <span
+                      class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                      >저장</span
+                    >
+                  </div>
+
+                  <!-- Detail View Button -->
+                  <div class="relative group flex items-center justify-center">
+                    <button
+                      @click="openKakaoDetail"
+                      class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        ></path>
+                      </svg>
+                    </button>
+                    <span
+                      class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                      >상세 보기</span
+                    >
+                  </div>
+
+                  <!-- Close Button -->
+                  <div class="relative group flex items-center justify-center">
+                    <button
+                      @click="selectedPlace = null"
+                      class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
+                    </button>
+                    <span
+                      class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                      >닫기</span
+                    >
+                  </div>
+                </div>
+              </div>
               <span
                 v-if="
                   selectedPlace.category_name && selectedPlace.category_name.split('>').length > 1
                 "
-                class="text-sm text-gray-500 whitespace-nowrap"
+                class="text-sm text-gray-500 whitespace-nowrap block mb-1"
               >
                 {{ selectedPlace.category_name.split('>')[1].trim() }}
               </span>
+              <p class="text-sm text-gray-500 truncate">
+                {{ selectedPlace.address || '카테고리 정보' }}
+              </p>
+              <p class="text-gray-700 text-sm mt-1">
+                {{ selectedPlace.phone || '전화번호 정보 없음' }}
+              </p>
             </div>
-            <p class="text-sm text-gray-500 truncate">
-              {{ selectedPlace.address || '카테고리 정보' }}
-            </p>
           </div>
-          <button
-            @click="selectedPlace = null"
-            class="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <p class="text-gray-700 mb-6 text-sm">{{ selectedPlace.phone || '전화번호 정보 없음' }}</p>
-        <div class="flex space-x-3">
-          <button
-            @click="openSaveModal"
-            class="flex-1 bg-gray-100 text-gray-800 py-3 rounded-xl font-bold hover:bg-gray-200 transition"
-          >
-            저장
-          </button>
-          <button
-            class="flex-[2] bg-primary text-white py-3 rounded-xl font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-200"
-          >
-            식당 상세 보기
-          </button>
+
+          <!-- Image Area -->
+          <div class="w-full aspect-[9/4] rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
+            <div v-if="isImageLoading" class="absolute inset-0 bg-gray-200 animate-pulse"></div>
+            <div
+              v-else-if="selectedPlaceImages.length > 0"
+              class="grid grid-cols-3 grid-rows-2 gap-1 w-full h-full"
+            >
+              <div class="col-span-2 row-span-2 bg-gray-200 relative">
+                <img :src="selectedPlaceImages[0]" class="w-full h-full object-cover" />
+              </div>
+              <div v-if="selectedPlaceImages[1]" class="col-span-1 row-span-1 bg-gray-200 relative">
+                <img :src="selectedPlaceImages[1]" class="w-full h-full object-cover" />
+              </div>
+              <div v-if="selectedPlaceImages[2]" class="col-span-1 row-span-1 bg-gray-200 relative">
+                <img :src="selectedPlaceImages[2]" class="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div
+              v-else
+              class="flex items-center justify-center w-full h-full text-gray-400 text-sm"
+            >
+              이미지가 없습니다
+            </div>
+          </div>
+
+          <hr class="my-4 border-gray-200" />
+
+          <!-- Reviews Area -->
+          <div>
+            <h3 class="text-lg font-bold text-gray-900 mb-3">리뷰</h3>
+            <div v-if="isLoadingReviews" class="text-sm text-gray-500 text-center py-4">
+              리뷰를 불러오는 중...
+            </div>
+            <div
+              v-else-if="placeReviews.length === 0"
+              class="text-sm text-gray-500 text-center py-4"
+            >
+              아직 작성된 리뷰가 없습니다.
+            </div>
+            <div v-else class="space-y-4">
+              <div
+                v-for="review in placeReviews"
+                :key="review.id"
+                class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
+              >
+                <!-- Review Header: profile + nickname -->
+                <div class="flex items-center gap-2 p-3 border-b border-gray-100">
+                  <img
+                    :src="review.author?.profileImage || '/default_profile_image.png'"
+                    @error="
+                      (e: Event) =>
+                        ((e.target as HTMLImageElement).src = '/default_profile_image.png')
+                    "
+                    class="w-9 h-9 rounded-full object-cover bg-gray-200 shrink-0"
+                    alt="profile"
+                  />
+                  <div>
+                    <p class="font-bold text-sm text-gray-900">
+                      {{ review.author?.nickname || review.userNickname }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ review.author?.handle ? '@' + review.author.handle : '' }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Review Images: 3:2 ratio grid same as place images -->
+                <div
+                  v-if="review.images && review.images.length > 0"
+                  class="w-full aspect-[9/4] bg-gray-100 overflow-hidden"
+                >
+                  <div v-if="review.images.length === 1" class="w-full h-full">
+                    <img
+                      :src="review.images[0]"
+                      class="w-full h-full object-cover"
+                      alt="review image"
+                    />
+                  </div>
+                  <div v-else class="grid grid-cols-3 grid-rows-2 gap-1 w-full h-full">
+                    <div class="col-span-2 row-span-2 bg-gray-200">
+                      <img :src="review.images[0]" class="w-full h-full object-cover" />
+                    </div>
+                    <div v-if="review.images[1]" class="col-span-1 row-span-1 bg-gray-200">
+                      <img :src="review.images[1]" class="w-full h-full object-cover" />
+                    </div>
+                    <div v-if="review.images[2]" class="col-span-1 row-span-1 bg-gray-200">
+                      <img :src="review.images[2]" class="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review Content -->
+                <div class="px-3 pt-2 pb-1 text-sm">
+                  <span class="font-bold text-gray-900 mr-1">{{
+                    review.author?.nickname || review.userNickname
+                  }}</span>
+                  <span class="text-gray-800 whitespace-pre-wrap">{{ review.content }}</span>
+                </div>
+
+                <!-- Footer: heart | date + stars -->
+                <div class="px-3 py-2 flex items-center justify-between border-t border-gray-50">
+                  <span class="flex items-center gap-1 text-xs text-gray-500">
+                    <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                    {{ review.likeCount ?? 0 }}
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400">
+                      {{
+                        review.createdAt
+                          ? new Date(review.createdAt).toLocaleDateString('ko-KR', {
+                              year: '2-digit',
+                              month: '2-digit',
+                              day: '2-digit',
+                            })
+                          : ''
+                      }}
+                    </span>
+                    <div class="flex items-center gap-0.5">
+                      <svg
+                        v-for="s in 5"
+                        :key="s"
+                        class="w-3.5 h-3.5"
+                        :class="
+                          s <= (review.ratingScore || 0) ? 'text-yellow-400' : 'text-gray-200'
+                        "
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -86,7 +273,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
@@ -102,8 +289,99 @@ const mapMarkers = ref<any[]>([])
 const searchResults = ref<any[]>([])
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const selectedPlace = ref<any>(null)
+const selectedPlaceImages = ref<string[]>([])
+const isImageLoading = ref(false)
+const isLoadingReviews = ref(false)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const placeReviews = ref<any[]>([])
 
 const isSaveModalOpen = ref(false)
+
+const fetchPlaceImage = async (query: string) => {
+  isImageLoading.value = true
+  selectedPlaceImages.value = []
+  try {
+    const res = await fetch(
+      `/naver-api/v1/search/image?query=${encodeURIComponent(query)}&display=3`,
+      {
+        headers: {
+          'X-Naver-Client-Id': import.meta.env.VITE_NAVER_CLIENT_ID || '',
+          'X-Naver-Client-Secret': import.meta.env.VITE_NAVER_CLIENT_SECRET || '',
+        },
+      },
+    )
+    const data = await res.json()
+    if (data && data.items && data.items.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      selectedPlaceImages.value = data.items.map((item: any) => item.link)
+    }
+  } catch (error) {
+    console.error('Failed to fetch image:', error)
+  } finally {
+    isImageLoading.value = false
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const checkOrCreatePlace = async (place: any) => {
+  try {
+    const backendHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (authStore.isAuthenticated && authStore.token) {
+      backendHeaders['Authorization'] = `Bearer ${authStore.token}`
+    }
+    await fetch('/api/places', {
+      method: 'POST',
+      headers: backendHeaders,
+      body: JSON.stringify({
+        id: place.id,
+        name: place.title || place.place_name,
+        x: place.lng?.toString() || place.x?.toString(),
+        y: place.lat?.toString() || place.y?.toString(),
+        roadAddressName: place.address || place.address_name,
+        categoryName: place.category_name,
+      }),
+    })
+  } catch (error) {
+    console.error('Failed to check/create place:', error)
+  }
+}
+
+const fetchPlaceReviews = async (placeId: string) => {
+  isLoadingReviews.value = true
+  placeReviews.value = []
+  try {
+    const res = await fetch(`/api/places/${placeId}/reviews`)
+    if (res.ok) {
+      const data = await res.json()
+      placeReviews.value = data.content || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch reviews:', error)
+  } finally {
+    isLoadingReviews.value = false
+  }
+}
+
+const openKakaoDetail = () => {
+  if (selectedPlace.value && selectedPlace.value.id) {
+    window.open(`https://place.map.kakao.com/${selectedPlace.value.id}`, '_blank')
+  }
+}
+
+watch(selectedPlace, async (newPlace) => {
+  if (newPlace) {
+    if (newPlace.title) {
+      fetchPlaceImage(newPlace.title)
+    }
+    await checkOrCreatePlace(newPlace)
+    fetchPlaceReviews(newPlace.id)
+  } else {
+    selectedPlaceImages.value = []
+    placeReviews.value = []
+  }
+})
 
 const openSaveModal = () => {
   if (!authStore.isAuthenticated) {

@@ -25,6 +25,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/naver-api': {
+        target: 'https://openapi.naver.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/naver-api/, ''),
+        secure: false,
+      },
     },
   },
 })
