@@ -20,6 +20,64 @@
         @bounds-changed="handleBoundsChanged"
       />
 
+      <!-- Category Filter Floating Buttons -->
+      <div class="fixed top-4 right-4 flex flex-col gap-3 z-40">
+        <!-- All -->
+        <div class="relative group flex items-center justify-center">
+          <button
+            class="p-3 rounded-full shadow-lg transition"
+            :class="
+              filterMode === 'all'
+                ? 'text-blue-600 bg-blue-100'
+                : 'text-gray-500 bg-white hover:text-blue-600 hover:bg-blue-50'
+            "
+            @click="setFilterMode('all')"
+          >
+            <List class="w-6 h-6" />
+          </button>
+          <span
+            class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
+            >전체</span
+          >
+        </div>
+        <!-- Restaurant -->
+        <div class="relative group flex items-center justify-center">
+          <button
+            class="p-3 rounded-full shadow-lg transition"
+            :class="
+              filterMode === 'restaurant'
+                ? 'text-orange-600 bg-orange-100'
+                : 'text-gray-500 bg-white hover:text-orange-600 hover:bg-orange-50'
+            "
+            @click="setFilterMode('restaurant')"
+          >
+            <Utensils class="w-6 h-6" />
+          </button>
+          <span
+            class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
+            >식당</span
+          >
+        </div>
+        <!-- Cafe -->
+        <div class="relative group flex items-center justify-center">
+          <button
+            class="p-3 rounded-full shadow-lg transition"
+            :class="
+              filterMode === 'cafe'
+                ? 'text-amber-700 bg-amber-100'
+                : 'text-gray-500 bg-white hover:text-amber-700 hover:bg-amber-50'
+            "
+            @click="setFilterMode('cafe')"
+          >
+            <Coffee class="w-6 h-6" />
+          </button>
+          <span
+            class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
+            >카페</span
+          >
+        </div>
+      </div>
+
       <!-- Right Top Modal -->
       <div
         v-if="selectedPlace"
@@ -323,6 +381,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { List, Utensils, Coffee } from 'lucide-vue-next'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
@@ -509,7 +568,17 @@ const handleBoundsChanged = (bounds: any) => {
   currentBounds.value = bounds
 }
 
+const filterMode = ref<'all' | 'restaurant' | 'cafe'>('all')
+const currentKeyword = ref('맛집')
+
+const setFilterMode = (mode: 'all' | 'restaurant' | 'cafe') => {
+  filterMode.value = mode
+  handleSearch(currentKeyword.value)
+}
+
 const handleSearch = (keyword: string) => {
+  currentKeyword.value = keyword
+
   if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
     console.error('Kakao Places Service is not available.')
     showAlert('지도 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'warning')
@@ -522,7 +591,7 @@ const handleSearch = (keyword: string) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mergedData: any[] = []
-  let pendingRequests = 6 // 최대 3페이지 * 2개 카테고리
+  let pendingRequests = filterMode.value === 'all' ? 6 : 3
 
   const processResults = () => {
     if (mergedData.length === 0) {
@@ -589,10 +658,17 @@ const handleSearch = (keyword: string) => {
     sort: window.kakao.maps.services.SortBy.ACCURACY,
   }
 
-  // 음식점(FD6)과 카페(CE7) 카테고리로 좁혀서 거리순 병렬 검색 (최대 3페이지까지 호출)
-  for (let page = 1; page <= 3; page++) {
-    ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'FD6', page })
-    ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'CE7', page })
+  // 필터에 맞게 카테고리별 병렬 검색 (최대 3페이지까지 호출)
+  if (filterMode.value === 'all' || filterMode.value === 'restaurant') {
+    for (let page = 1; page <= 3; page++) {
+      ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'FD6', page })
+    }
+  }
+
+  if (filterMode.value === 'all' || filterMode.value === 'cafe') {
+    for (let page = 1; page <= 3; page++) {
+      ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'CE7', page })
+    }
   }
 }
 

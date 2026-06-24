@@ -1,13 +1,13 @@
 <template>
   <aside class="h-full w-80 bg-white border-r border-gray-200 flex flex-col shrink-0">
-    <!-- Search Area -->
-    <div class="h-16 flex items-center px-4 border-b border-gray-100 shrink-0">
+    <!-- Search and Filter Area -->
+    <div class="flex flex-col px-4 pt-4 pb-3 border-b border-gray-100 shrink-0 gap-3">
       <form @submit.prevent="handleSearch" class="relative w-full">
         <input
           v-model="searchQuery"
           type="text"
           class="w-full bg-gray-100 rounded-lg py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="장소, 식당 검색"
+          placeholder="검색어를 입력하세요"
         />
         <button type="submit" class="absolute right-3 top-2.5 text-gray-500 hover:text-primary">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,9 +100,8 @@ const emit = defineEmits(['search', 'select-place'])
 const searchQuery = ref('')
 
 const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    emit('search', searchQuery.value)
-  }
+  const query = searchQuery.value.trim() || '맛집'
+  emit('search', query)
 }
 
 // 카테고리 파싱 함수
