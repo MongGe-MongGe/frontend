@@ -10,14 +10,13 @@
     </header>
 
     <div class="w-full flex flex-col items-center py-4 px-4 space-y-6 pb-20">
-      <FeedCard 
-        v-for="feed in feeds" 
-        :key="feed.id" 
-        :feed="feed" 
-        :id="`feed-${feed.id}`"
-        @edit="openEditModal" 
-        @delete="deleteFeed"
-      />
+      <div v-for="feed in feeds" :key="feed.id" :id="`feed-${feed.id}`" class="w-full flex justify-center">
+        <FeedCard 
+          :feed="feed" 
+          @edit="openEditModal" 
+          @delete="deleteFeed"
+        />
+      </div>
       <div v-if="feeds.length === 0 && !isLoading" class="text-center text-gray-500 py-10">
         표시할 피드가 없습니다.
       </div>
@@ -77,6 +76,10 @@ const loadFeedsIfNeeded = async () => {
       await feedStore.loadUserReviews(userId)
     } else if (contextId.value === 'home') {
       await feedStore.loadMyFeeds()
+    } else if (contextId.value === 'popular') {
+      await feedStore.loadPopularReviews()
+    } else if (contextId.value === 'search') {
+      await feedStore.loadSearchReviews(feedStore.currentSearchKeyword)
     }
   }
 }
@@ -85,10 +88,8 @@ const scrollToTarget = () => {
   if (targetReviewId.value) {
     const el = document.getElementById(`feed-${targetReviewId.value}`)
     if (el) {
-      // Offset for sticky header
-      const yOffset = -60 
-      const y = el.getBoundingClientRect().top + window.scrollY + yOffset
-      window.scrollTo({ top: y, behavior: 'smooth' })
+      // Use block: 'center' to put the target feed in the middle of the screen
+      el.scrollIntoView({ behavior: 'auto', block: 'center' })
     }
   }
 }

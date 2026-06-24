@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getAllReviews, getUserReviews, deleteReview } from '@/api/review'
+import { getAllReviews, getUserReviews, deleteReview, getPopularReviews, searchReviews } from '@/api/review'
 
 interface FeedContext {
   items: any[]
@@ -69,6 +69,55 @@ export const useFeedStore = defineStore('feed', () => {
     }
   }
 
+  const loadPopularReviews = async (reset = false) => {
+    const ctxId = 'popular'
+    const ctx = getContext(ctxId)
+    if (reset) {
+      ctx.page = 0
+      ctx.items = []
+      ctx.hasMore = true
+    }
+    if (!ctx.hasMore || ctx.isLoading) return
+
+    ctx.isLoading = true
+    try {
+      const res = await getPopularReviews(ctx.page, 20)
+      ctx.items.push(...res.content)
+      ctx.page++
+      ctx.hasMore = !res.last
+    } catch (err) {
+      console.error(`Failed to load popular reviews`, err)
+    } finally {
+      ctx.isLoading = false
+    }
+  }
+
+  const currentSearchKeyword = ref('')
+
+  const loadSearchReviews = async (keyword: string, reset = false) => {
+    const ctxId = 'search'
+    const ctx = getContext(ctxId)
+    if (reset) {
+      ctx.page = 0
+      ctx.items = []
+      ctx.hasMore = true
+      currentSearchKeyword.value = keyword
+    }
+    if (!ctx.hasMore || ctx.isLoading) return
+
+    ctx.isLoading = true
+    try {
+      const res = await searchReviews(keyword, ctx.page, 20)
+      ctx.items.push(...res.content)
+      ctx.page++
+      ctx.hasMore = !res.last
+    } catch (err) {
+      console.error(`Failed to load search reviews`, err)
+    } finally {
+      ctx.isLoading = false
+    }
+  }
+
   const removeFeed = async (reviewId: string) => {
     try {
       await deleteReview(reviewId)
@@ -124,6 +173,9 @@ export const useFeedStore = defineStore('feed', () => {
     getContext,
     loadMyFeeds,
     loadUserReviews,
+    loadPopularReviews,
+    loadSearchReviews,
+    currentSearchKeyword,
     removeFeed,
     updateFeedLocally,
     updateLikeLocally,

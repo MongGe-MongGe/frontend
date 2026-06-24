@@ -68,74 +68,86 @@
 
       <!-- Default Explore Content -->
       <div v-else class="p-4">
-        <!-- Event Banner -->
-        <div
-          class="bg-gradient-to-r from-blue-400 to-primary rounded-xl p-6 text-white shadow-md mb-6"
-        >
-          <h2 class="text-lg font-bold">봄맞이 카페 투어 이벤트!</h2>
-          <p class="text-sm mt-1 opacity-90">리뷰 남기고 아메리카노 받자</p>
-        </div>
-
-        <h3 class="font-bold text-gray-900 mb-3">인기 피드</h3>
-
-        <!-- Tags -->
-        <div class="flex space-x-2 overflow-x-auto pb-2 mb-2 no-scrollbar">
-          <button
-            class="whitespace-nowrap px-4 py-1.5 bg-gray-900 text-white rounded-full text-sm font-medium"
-          >
-            전체
-          </button>
-          <button
-            class="whitespace-nowrap px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50"
-          >
-            #카페
-          </button>
-          <button
-            class="whitespace-nowrap px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50"
-          >
-            #데이트
-          </button>
-          <button
-            class="whitespace-nowrap px-4 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50"
-          >
-            #가성비
-          </button>
-        </div>
-
-        <!-- Grid -->
-        <div class="grid grid-cols-3 gap-1">
-          <div
-            v-for="i in 12"
-            :key="i"
-            class="aspect-square bg-gray-300 relative group overflow-hidden cursor-pointer"
-          >
-            <div
-              class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center"
-            >
-              <span class="text-white opacity-0 group-hover:opacity-100 font-bold transition"
-                >♥ 12</span
-              >
-            </div>
+        <template v-if="hasSearched">
+          <!-- Search Results for Reviews -->
+          <div v-if="isLoadingFeeds && searchedReviews.length === 0" class="flex justify-center p-10">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        </div>
+          <div v-else-if="searchedReviews.length === 0" class="text-center p-10 text-gray-500">
+            검색 결과가 없습니다.
+          </div>
+          <div v-else class="grid grid-cols-3 gap-1 pb-4">
+            <router-link
+              v-for="feed in searchedReviews"
+              :key="feed.id"
+              :to="`/feed/search/${feed.id}`"
+              class="aspect-square bg-gray-300 relative group overflow-hidden block"
+            >
+              <img v-if="feed.images && feed.images.length > 0" :src="feed.images[0]" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="text-white font-bold">♥ {{ feed.likeCount || 0 }}</span>
+              </div>
+            </router-link>
+          </div>
+          <div v-if="searchedReviews.length > 0 && !hasReachedEnd" class="py-4 flex justify-center">
+            <button
+              @click="loadMore"
+              :disabled="isLoadingMore"
+              class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-bold rounded-full transition disabled:opacity-50"
+            >
+              <span v-if="isLoadingMore">로딩중...</span>
+              <span v-else>더보기</span>
+            </button>
+          </div>
+        </template>
+        
+        <template v-else>
+          <h3 class="font-bold text-gray-900 mb-3">인기 피드</h3>
+          <!-- Grid -->
+          <div v-if="isLoadingFeeds" class="flex justify-center p-10">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+          <div v-else-if="popularFeeds.length === 0" class="text-center p-10 text-gray-500">
+            인기 피드가 없습니다.
+          </div>
+          <div v-else class="grid grid-cols-3 gap-1">
+            <router-link
+              v-for="feed in popularFeeds"
+              :key="feed.id"
+              :to="`/feed/popular/${feed.id}`"
+              class="aspect-square bg-gray-300 relative group overflow-hidden block"
+            >
+              <img v-if="feed.images && feed.images.length > 0" :src="feed.images[0]" class="w-full h-full object-cover" />
+              <div
+                class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <span class="text-white font-bold"
+                  >♥ {{ feed.likeCount || 0 }}</span
+                >
+              </div>
+            </router-link>
+          </div>
+        </template>
       </div>
     </div>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import PageContainer from '@/components/common/PageContainer.vue'
 import UserListItem from '@/components/user/UserListItem.vue'
 import { searchUsers } from '@/api/user'
+import { useFeedStore } from '@/stores/feed'
+
+const feedStore = useFeedStore()
 
 const tabs = [
-  { id: 'users', name: '유저' },
   { id: 'reviews', name: '리뷰' },
-  { id: 'places', name: '장소' },
+  { id: 'users', name: '유저' },
 ]
 
-const activeTab = ref('users')
+const activeTab = ref('reviews')
 const keyword = ref('')
 const users = ref<any[]>([])
 const isLoading = ref(false)
@@ -146,7 +158,7 @@ const limit = 20
 const hasReachedEnd = ref(false)
 
 const performSearch = async () => {
-  if (activeTab.value !== 'users' || !keyword.value.trim()) return
+  if (!keyword.value.trim()) return
 
   isLoading.value = true
   hasSearched.value = true
@@ -154,13 +166,20 @@ const performSearch = async () => {
   hasReachedEnd.value = false
 
   try {
-    const results = await searchUsers(keyword.value, limit, offset.value)
-    users.value = results
-    if (results.length < limit) {
-      hasReachedEnd.value = true
+    if (activeTab.value === 'users') {
+      const results = await searchUsers(keyword.value, limit, offset.value)
+      users.value = results
+      if (results.length < limit) {
+        hasReachedEnd.value = true
+      }
+    } else if (activeTab.value === 'reviews') {
+      await feedStore.loadSearchReviews(keyword.value, true)
+      if (!feedStore.getContext('search').hasMore) {
+        hasReachedEnd.value = true
+      }
     }
   } catch (error) {
-    console.error('Failed to search users', error)
+    console.error('Failed to search', error)
   } finally {
     isLoading.value = false
   }
@@ -173,22 +192,39 @@ const loadMore = async () => {
   offset.value += limit
 
   try {
-    const results = await searchUsers(keyword.value, limit, offset.value)
-    users.value = [...users.value, ...results]
-    if (results.length < limit) {
-      hasReachedEnd.value = true
+    if (activeTab.value === 'users') {
+      const results = await searchUsers(keyword.value, limit, offset.value)
+      users.value = [...users.value, ...results]
+      if (results.length < limit) {
+        hasReachedEnd.value = true
+      }
+    } else if (activeTab.value === 'reviews') {
+      await feedStore.loadSearchReviews(keyword.value)
+      if (!feedStore.getContext('search').hasMore) {
+        hasReachedEnd.value = true
+      }
     }
   } catch (error) {
-    console.error('Failed to load more users', error)
-    offset.value -= limit // rollback
+    console.error('Failed to load more', error)
+    if (activeTab.value === 'users') offset.value -= limit // rollback
   } finally {
     isLoadingMore.value = false
   }
 }
 
-watch(activeTab, (newTab) => {
-  if (newTab === 'users' && keyword.value && !hasSearched.value) {
+watch(activeTab, () => {
+  if (keyword.value) {
     performSearch()
+  }
+})
+
+const popularFeeds = computed(() => feedStore.getContext('popular').items)
+const searchedReviews = computed(() => feedStore.getContext('search').items)
+const isLoadingFeeds = computed(() => feedStore.getContext('popular').isLoading || feedStore.getContext('search').isLoading)
+
+onMounted(() => {
+  if (popularFeeds.value.length === 0) {
+    feedStore.loadPopularReviews(true)
   }
 })
 </script>
