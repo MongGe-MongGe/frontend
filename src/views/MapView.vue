@@ -124,13 +124,24 @@
               v-else-if="selectedPlaceImages.length > 0"
               class="grid grid-cols-3 grid-rows-2 gap-1 w-full h-full"
             >
-              <div class="col-span-2 row-span-2 bg-gray-200 relative">
+              <div
+                class="col-span-2 row-span-2 bg-gray-200 relative cursor-pointer hover:opacity-90 transition"
+                @click="openImageModal(selectedPlaceImages[0])"
+              >
                 <img :src="selectedPlaceImages[0]" class="w-full h-full object-cover" />
               </div>
-              <div v-if="selectedPlaceImages[1]" class="col-span-1 row-span-1 bg-gray-200 relative">
+              <div
+                v-if="selectedPlaceImages[1]"
+                class="col-span-1 row-span-1 bg-gray-200 relative cursor-pointer hover:opacity-90 transition"
+                @click="openImageModal(selectedPlaceImages[1])"
+              >
                 <img :src="selectedPlaceImages[1]" class="w-full h-full object-cover" />
               </div>
-              <div v-if="selectedPlaceImages[2]" class="col-span-1 row-span-1 bg-gray-200 relative">
+              <div
+                v-if="selectedPlaceImages[2]"
+                class="col-span-1 row-span-1 bg-gray-200 relative cursor-pointer hover:opacity-90 transition"
+                @click="openImageModal(selectedPlaceImages[2])"
+              >
                 <img :src="selectedPlaceImages[2]" class="w-full h-full object-cover" />
               </div>
             </div>
@@ -270,6 +281,43 @@
       @close="isSaveModalOpen = false"
       @saved="isSaveModalOpen = false"
     />
+
+    <!-- Image Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-300"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-300"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="isImageModalOpen"
+          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4"
+          @click="isImageModalOpen = false"
+        >
+          <button
+            class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+            @click="isImageModalOpen = false"
+          >
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+          <img
+            :src="selectedImageForModal"
+            class="max-w-full max-h-full object-contain select-none"
+            @click.stop
+          />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -302,7 +350,23 @@ const placeReviews = ref<any[]>([])
 
 const isSaveModalOpen = ref(false)
 
+const isImageModalOpen = ref(false)
+const selectedImageForModal = ref('')
+
+const openImageModal = (imageUrl?: string) => {
+  if (!imageUrl) return
+  selectedImageForModal.value = imageUrl
+  isImageModalOpen.value = true
+}
+
+const imageCache = new Map<string, string[]>()
+
 const fetchPlaceImage = async (query: string) => {
+  if (imageCache.has(query)) {
+    selectedPlaceImages.value = imageCache.get(query) || []
+    return
+  }
+
   isImageLoading.value = true
   selectedPlaceImages.value = []
   try {
@@ -318,7 +382,11 @@ const fetchPlaceImage = async (query: string) => {
     const data = await res.json()
     if (data && data.items && data.items.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      selectedPlaceImages.value = data.items.map((item: any) => item.link)
+      const images = data.items.map((item: any) => item.link)
+      selectedPlaceImages.value = images
+      imageCache.set(query, images)
+    } else {
+      imageCache.set(query, [])
     }
   } catch (error) {
     console.error('Failed to fetch image:', error)
