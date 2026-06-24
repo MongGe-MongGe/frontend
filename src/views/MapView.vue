@@ -3,6 +3,8 @@
     <MapSidebar
       :search-results="searchResults"
       :selected-place-id="selectedPlace?.id"
+      :filter-mode="filterMode"
+      @update:filterMode="setFilterMode"
       @search="handleSearch"
       @select-place="handleSelectPlace"
     />
@@ -20,63 +22,6 @@
         @bounds-changed="handleBoundsChanged"
       />
 
-      <!-- Category Filter Floating Buttons -->
-      <div class="fixed top-4 right-4 flex flex-col gap-3 z-40">
-        <!-- All -->
-        <div class="relative group flex items-center justify-center">
-          <button
-            class="p-3 rounded-full shadow-lg transition"
-            :class="
-              filterMode === 'all'
-                ? 'text-blue-600 bg-blue-100'
-                : 'text-gray-500 bg-white hover:text-blue-600 hover:bg-blue-50'
-            "
-            @click="setFilterMode('all')"
-          >
-            <List class="w-6 h-6" />
-          </button>
-          <span
-            class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
-            >전체</span
-          >
-        </div>
-        <!-- Restaurant -->
-        <div class="relative group flex items-center justify-center">
-          <button
-            class="p-3 rounded-full shadow-lg transition"
-            :class="
-              filterMode === 'restaurant'
-                ? 'text-orange-600 bg-orange-100'
-                : 'text-gray-500 bg-white hover:text-orange-600 hover:bg-orange-50'
-            "
-            @click="setFilterMode('restaurant')"
-          >
-            <Utensils class="w-6 h-6" />
-          </button>
-          <span
-            class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
-            >식당</span
-          >
-        </div>
-        <!-- Cafe -->
-        <div class="relative group flex items-center justify-center">
-          <button
-            class="p-3 rounded-full shadow-lg transition"
-            :class="
-              filterMode === 'cafe'
-                ? 'text-amber-700 bg-amber-100'
-                : 'text-gray-500 bg-white hover:text-amber-700 hover:bg-amber-50'
-            "
-            @click="setFilterMode('cafe')"
-          >
-            <Coffee class="w-6 h-6" />
-          </button>
-          <span
-            class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none"
-            >카페</span
-          >
-        </div>
-      </div>
 
       <!-- Right Top Modal -->
       <div
@@ -381,7 +326,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { List, Utensils, Coffee } from 'lucide-vue-next'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
@@ -686,6 +630,23 @@ const handleSelectPlace = (place: any) => {
     category_name: place.category_name,
     lat: Number(place.y),
     lng: Number(place.x),
+  }
+
+  // 그룹 장소 선택 시 지도에 마커가 없으면 추가
+  const existingMarker = mapMarkers.value.find((m) => m.id === place.id)
+  if (!existingMarker) {
+    mapMarkers.value = [
+      ...mapMarkers.value,
+      {
+        lat: Number(place.y),
+        lng: Number(place.x),
+        title: place.place_name,
+        address: place.address_name,
+        phone: place.phone,
+        category_name: place.category_name,
+        id: place.id,
+      },
+    ]
   }
 }
 

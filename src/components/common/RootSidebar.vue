@@ -14,10 +14,7 @@
 
       <!-- 탐색 -->
       <SidebarItem to="/explore" label="탐색">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        <Globe class="w-6 h-6" />
       </SidebarItem>
 
       <!-- 지도 -->
@@ -97,9 +94,9 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, h, resolveComponent } from 'vue'
+import { defineComponent, h } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { Crown } from 'lucide-vue-next'
+import { Crown, Globe } from 'lucide-vue-next'
 import AppLogo from '@/components/common/AppLogo.vue'
 import { RouterLink } from 'vue-router'
 

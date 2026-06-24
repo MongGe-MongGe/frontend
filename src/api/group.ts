@@ -10,6 +10,11 @@ export const getUserGroups = async (userId: string) => {
   return response.data
 }
 
+export const getFollowingGroups = async () => {
+  const response = await apiClient.get('/users/me/groups/following')
+  return response.data
+}
+
 export const createGroup = async (name: string) => {
   const response = await apiClient.post('/users/me/groups', { name })
   return response.data
