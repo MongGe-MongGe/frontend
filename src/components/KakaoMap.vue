@@ -14,7 +14,7 @@ const props = defineProps<{
   selectedId?: string | null
 }>()
 
-const emit = defineEmits(['marker-click', 'center-changed'])
+const emit = defineEmits(['marker-click', 'center-changed', 'bounds-changed'])
 const mapContainer = ref<HTMLElement | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let map: any = null
@@ -44,7 +44,9 @@ const initMap = () => {
   // 지도 이동이 멈추었을 때 중심 좌표 전달
   window.kakao.maps.event.addListener(map, 'idle', () => {
     const center = map.getCenter()
+    const bounds = map.getBounds()
     emit('center-changed', { lat: center.getLat(), lng: center.getLng() })
+    emit('bounds-changed', bounds)
   })
 
   renderMarkers()

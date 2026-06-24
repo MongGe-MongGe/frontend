@@ -17,6 +17,7 @@
         :selected-id="selectedPlace?.id"
         @marker-click="handleMarkerClick"
         @center-changed="handleCenterChanged"
+        @bounds-changed="handleBoundsChanged"
       />
 
       <!-- Right Top Modal -->
@@ -24,96 +25,96 @@
         v-if="selectedPlace"
         class="absolute top-4 right-4 w-[calc(100%-32px)] max-w-md bg-white rounded-2xl shadow-xl p-6 z-10 transition-all duration-300 max-h-[calc(100vh-32px)] flex flex-col"
       >
+        <!-- Fixed Header Area -->
+        <div class="flex items-center gap-2 mb-3 shrink-0 pb-3 border-b border-gray-100">
+          <h2 class="text-xl font-extrabold text-gray-900 truncate">
+            {{ selectedPlace.title }}
+          </h2>
+          <div class="flex space-x-1 ml-auto shrink-0 items-center">
+            <!-- Bookmark Button -->
+            <div class="relative group flex items-center justify-center">
+              <button
+                @click="openSaveModal"
+                class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                  ></path>
+                </svg>
+              </button>
+              <span
+                class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                >저장</span
+              >
+            </div>
+
+            <!-- Detail View Button -->
+            <div class="relative group flex items-center justify-center">
+              <button
+                @click="openKakaoDetail"
+                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  ></path>
+                </svg>
+              </button>
+              <span
+                class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                >상세 보기</span
+              >
+            </div>
+
+            <!-- Close Button -->
+            <div class="relative group flex items-center justify-center">
+              <button
+                @click="selectedPlace = null"
+                class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
+                </svg>
+              </button>
+              <span
+                class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                >닫기</span
+              >
+            </div>
+          </div>
+        </div>
+
         <!-- Scrollable Content Area -->
         <div
-          class="overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          class="overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex-1"
         >
-          <div class="flex justify-between items-start mb-4 mt-2">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <h2 class="text-xl font-extrabold text-gray-900 truncate">
-                  {{ selectedPlace.title }}
-                </h2>
-                <div class="flex space-x-1 ml-auto shrink-0 items-center">
-                  <!-- Bookmark Button -->
-                  <div class="relative group flex items-center justify-center">
-                    <button
-                      @click="openSaveModal"
-                      class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                        ></path>
-                      </svg>
-                    </button>
-                    <span
-                      class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
-                      >저장</span
-                    >
-                  </div>
-
-                  <!-- Detail View Button -->
-                  <div class="relative group flex items-center justify-center">
-                    <button
-                      @click="openKakaoDetail"
-                      class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        ></path>
-                      </svg>
-                    </button>
-                    <span
-                      class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
-                      >상세 보기</span
-                    >
-                  </div>
-
-                  <!-- Close Button -->
-                  <div class="relative group flex items-center justify-center">
-                    <button
-                      @click="selectedPlace = null"
-                      class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        ></path>
-                      </svg>
-                    </button>
-                    <span
-                      class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
-                      >닫기</span
-                    >
-                  </div>
-                </div>
-              </div>
-              <span
-                v-if="
-                  selectedPlace.category_name && selectedPlace.category_name.split('>').length > 1
-                "
-                class="text-sm text-gray-500 whitespace-nowrap block mb-1"
-              >
-                {{ selectedPlace.category_name.split('>')[1].trim() }}
-              </span>
-              <p class="text-sm text-gray-500 truncate">
-                {{ selectedPlace.address || '카테고리 정보' }}
-              </p>
-              <p class="text-gray-700 text-sm mt-1">
-                {{ selectedPlace.phone || '전화번호 정보 없음' }}
-              </p>
-            </div>
+          <div class="mb-4">
+            <span
+              v-if="
+                selectedPlace.category_name && selectedPlace.category_name.split('>').length > 1
+              "
+              class="text-sm text-gray-500 whitespace-nowrap block mb-1"
+            >
+              {{ selectedPlace.category_name.split('>')[1].trim() }}
+            </span>
+            <p class="text-sm text-gray-500 truncate">
+              {{ selectedPlace.address || '카테고리 정보' }}
+            </p>
+            <p class="text-gray-700 text-sm mt-1">
+              {{ selectedPlace.phone || '전화번호 정보 없음' }}
+            </p>
           </div>
 
           <!-- Image Area -->
@@ -284,6 +285,8 @@ const authStore = useAuthStore()
 const mapCenter = ref({ lat: 37.5665, lng: 126.978 }) // 검색 및 최초 로드 시 설정할 맵 중심
 const currentViewCenter = ref({ lat: 37.5665, lng: 126.978 }) // 현재 사용자가 보고 있는 지도의 중심 좌표
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const currentBounds = ref<any>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapMarkers = ref<any[]>([])
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const searchResults = ref<any[]>([])
@@ -431,6 +434,11 @@ const handleCenterChanged = (center: { lat: number; lng: number }) => {
   currentViewCenter.value = center
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleBoundsChanged = (bounds: any) => {
+  currentBounds.value = bounds
+}
+
 const handleSearch = (keyword: string) => {
   if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
     console.error('Kakao Places Service is not available.')
@@ -501,14 +509,14 @@ const handleSearch = (keyword: string) => {
     }
   }
 
-  // 현재 지도 중심 좌표 기반 거리순 정렬 옵션
+  // 지도 중심 좌표 기반 검색 옵션 (정확도순 정렬로 뷰포트 내외부 골고루 분산)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchOptions: any = {
     location: new window.kakao.maps.LatLng(
       currentViewCenter.value.lat,
       currentViewCenter.value.lng,
     ),
-    sort: window.kakao.maps.services.SortBy.DISTANCE,
+    sort: window.kakao.maps.services.SortBy.ACCURACY,
   }
 
   // 음식점(FD6)과 카페(CE7) 카테고리로 좁혀서 거리순 병렬 검색 (최대 3페이지까지 호출)
