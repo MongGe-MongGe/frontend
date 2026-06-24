@@ -17,6 +17,16 @@ const router = createRouter({
       component: SignupView,
     },
     {
+      path: '/password-reset/request',
+      name: 'password-reset-request',
+      component: () => import('../views/PasswordResetRequestView.vue'),
+    },
+    {
+      path: '/password-reset/confirm',
+      name: 'password-reset-confirm',
+      component: () => import('../views/PasswordResetConfirmView.vue'),
+    },
+    {
       path: '/map',
       name: 'map',
       component: () => import('../views/MapView.vue'),
@@ -91,7 +101,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  const publicPages = ['/login', '/signup']
+  const publicPages = ['/login', '/signup', '/password-reset/request', '/password-reset/confirm']
   const authRequired = !publicPages.includes(to.path)
 
   // 로그인이 필요한 페이지인데 토큰이 없는 경우
