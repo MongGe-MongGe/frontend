@@ -2,6 +2,7 @@
   <div>
     <!-- Floating Button -->
     <button
+      v-if="!hideFloatingButton"
       @click="openModal"
       class="fixed bottom-12 right-12 w-12 h-12 flex items-center justify-center bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition transform hover:scale-105 z-40"
       aria-label="리뷰 작성"
@@ -212,6 +213,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  hideFloatingButton: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['success'])
@@ -243,7 +248,7 @@ const isValid = computed(() => {
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const openModal = (editData: any = null) => {
+const openModal = (editData: any = null, initialPlace: any = null) => {
   if (editData && editData.id) {
     isEdit.value = true
     editingId.value = editData.id
@@ -261,7 +266,8 @@ const openModal = (editData: any = null) => {
   } else {
     isEdit.value = false
     editingId.value = null
-    selectedPlace.value = null
+    // 장소가 미리 지정된 경우 해당 장소로 초기화
+    selectedPlace.value = initialPlace || null
     rating.value = 5
     content.value = ''
     images.value = []

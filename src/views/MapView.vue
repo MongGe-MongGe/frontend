@@ -158,8 +158,29 @@
 
           <!-- Reviews Area -->
           <div>
-            <h3 class="text-lg font-bold text-gray-900 mb-3">리뷰</h3>
-
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-bold text-gray-900">리뷰</h3>
+              <!-- 리뷰 작성 아이콘 버튼 -->
+              <div class="relative group flex items-center justify-center">
+                <button
+                  @click="openReviewModal"
+                  class="p-1.5 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </button>
+                <span
+                  class="absolute -top-8 right-0 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
+                  >리뷰 작성하기</span
+                >
+              </div>
+            </div>
             <!-- AI Review Summary -->
             <div
               v-if="selectedPlace?.reviewSummary?.summary"
@@ -363,6 +384,13 @@
       @saved="checkOrCreatePlace(selectedPlace)"
     />
 
+    <!-- Review Write Widget (modal only, no floating button) -->
+    <ReviewWriteWidget
+      ref="reviewWidgetRef"
+      :hide-floating-button="true"
+      @success="fetchPlaceReviews(selectedPlace?.id)"
+    />
+
     <!-- Image Modal -->
     <Teleport to="body">
       <Transition
@@ -408,6 +436,7 @@ import { useRoute, useRouter } from 'vue-router'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
+import ReviewWriteWidget from '@/components/review/ReviewWriteWidget.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAlert } from '@/composables/useAlert'
 import http from '@/api/http'
@@ -438,6 +467,34 @@ const isLoadingReviews = ref(false)
 const placeReviews = ref<any[]>([])
 
 const isSaveModalOpen = ref(false)
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const reviewWidgetRef = ref<any>(null)
+
+const openReviewModal = () => {
+  if (!authStore.isAuthenticated) {
+    showAlert('로그인이 필요합니다.', 'warning')
+    return
+  }
+  if (!selectedPlace.value) return
+
+  // 현재 선택된 장소 정보를 ReviewWriteWidget이 기대하는 포맷으로 변환
+  const placeForWidget = {
+    id: selectedPlace.value.id,
+    place_name: selectedPlace.value.title || selectedPlace.value.place_name,
+    name: selectedPlace.value.title || selectedPlace.value.place_name,
+    address_name: selectedPlace.value.address,
+    road_address_name: selectedPlace.value.address,
+    roadAddressName: selectedPlace.value.address,
+    addressName: selectedPlace.value.address,
+    category_name: selectedPlace.value.category_name,
+    x: selectedPlace.value.lng?.toString() || selectedPlace.value.x?.toString(),
+    y: selectedPlace.value.lat?.toString() || selectedPlace.value.y?.toString(),
+    phone: selectedPlace.value.phone,
+  }
+
+  reviewWidgetRef.value?.openModal(null, placeForWidget)
+}
 
 const isImageModalOpen = ref(false)
 const selectedImageForModal = ref('')
