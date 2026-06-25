@@ -81,6 +81,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { createComment, deleteComment, getCommentsByReview } from '@/api/comment'
 import { useAlert } from '@/composables/useAlert'
+import { useConfirm } from '@/composables/useConfirm'
 
 const props = defineProps<{
   feedId: string
@@ -91,6 +92,7 @@ const emit = defineEmits(['close', 'update:commentCount'])
 
 const authStore = useAuthStore()
 const { showAlert } = useAlert()
+const { confirm } = useConfirm()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const comments = ref<any[]>([])
 const isLoading = ref(true)
@@ -139,7 +141,13 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = async (commentId: string) => {
-  if (!confirm('댓글을 삭제하시겠습니까?')) return
+  const ok = await confirm({
+    title: '댓글 삭제',
+    message: '댓글을 삭제하시겠습니까?',
+    confirmText: '삭제하기',
+    danger: true,
+  })
+  if (!ok) return
   try {
     await deleteComment(commentId)
     comments.value = comments.value.filter((c) => c.id !== commentId)

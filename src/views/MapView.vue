@@ -335,6 +335,7 @@ import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAlert } from '@/composables/useAlert'
+import http from '@/api/http'
 
 const authStore = useAuthStore()
 const { showAlert } = useAlert()
@@ -405,23 +406,13 @@ const fetchPlaceImage = async (query: string) => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const checkOrCreatePlace = async (place: any) => {
   try {
-    const backendHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    if (authStore.isAuthenticated && authStore.token) {
-      backendHeaders['Authorization'] = `Bearer ${authStore.token}`
-    }
-    await fetch('/api/places', {
-      method: 'POST',
-      headers: backendHeaders,
-      body: JSON.stringify({
-        id: place.id,
-        name: place.title || place.place_name,
-        x: place.lng?.toString() || place.x?.toString(),
-        y: place.lat?.toString() || place.y?.toString(),
-        roadAddressName: place.address || place.address_name,
-        categoryName: place.category_name,
-      }),
+    await http.post('/api/places', {
+      id: place.id,
+      name: place.title || place.place_name,
+      x: place.lng?.toString() || place.x?.toString(),
+      y: place.lat?.toString() || place.y?.toString(),
+      roadAddressName: place.address || place.address_name,
+      categoryName: place.category_name,
     })
   } catch (error) {
     console.error('Failed to check/create place:', error)
@@ -432,11 +423,8 @@ const fetchPlaceReviews = async (placeId: string) => {
   isLoadingReviews.value = true
   placeReviews.value = []
   try {
-    const res = await fetch(`/api/places/${placeId}/reviews`)
-    if (res.ok) {
-      const data = await res.json()
-      placeReviews.value = data.content || []
-    }
+    const res = await http.get(`/api/places/${placeId}/reviews`)
+    placeReviews.value = res.data?.content || []
   } catch (error) {
     console.error('Failed to fetch reviews:', error)
   } finally {

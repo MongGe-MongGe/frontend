@@ -199,11 +199,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAlert } from '@/composables/useAlert'
+import { useConfirm } from '@/composables/useConfirm'
 import axios from 'axios'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { showAlert } = useAlert()
+const { confirm } = useConfirm()
 
 const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
 
@@ -263,7 +265,13 @@ const goToEdit = (post: Post) => {
 }
 
 const deletePost = async (post: Post) => {
-  if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) return
+  const ok = await confirm({
+    title: '게시글 삭제',
+    message: '정말 이 게시글을 삭제하시겠습니까?',
+    confirmText: '삭제하기',
+    danger: true,
+  })
+  if (!ok) return
 
   try {
     await axios.delete(`/api/posts/${post.id}`, {
