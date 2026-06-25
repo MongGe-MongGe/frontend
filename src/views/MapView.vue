@@ -755,6 +755,10 @@ const handleSelectGroup = (places: any[]) => {
     ...p,
     lat: Number(p.lat || p.y),
     lng: Number(p.lng || p.x),
+    title: p.title || p.name || p.place_name,
+    address: p.address || p.roadAddressName || p.address_name,
+    category_name: p.category_name || p.categoryName,
+    phone: p.phone,
   }))
   mapMarkers.value = mappedPlaces
   selectedPlace.value = null
