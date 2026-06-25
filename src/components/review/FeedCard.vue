@@ -110,9 +110,9 @@
         </div>
       </div>
       <!-- Place Save (Bookmark) -->
-      <button @click="openSaveModal" class="flex items-center group transition text-gray-400 hover:text-blue-500">
-        <div class="p-2 rounded-full group-hover:bg-blue-50 transition">
-          <Bookmark class="w-5 h-5" />
+      <button @click="openSaveModal" class="flex items-center group transition" :class="feed.place?.isSaved ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'">
+        <div class="p-2 rounded-full transition group-hover:bg-blue-50">
+          <Bookmark class="w-5 h-5" :class="{ 'fill-current': feed.place?.isSaved }" />
         </div>
       </button>
     </div>
@@ -195,6 +195,7 @@
     v-if="isSaveModalOpen" 
     :place="feed.place" 
     @close="isSaveModalOpen = false" 
+    @saved="onPlaceSaved"
   />
 </template>
 
@@ -228,6 +229,12 @@ const isDropdownOpen = ref(false)
 const isSaveModalOpen = ref(false)
 const isCommentOpen = ref(false)
 const isLiking = ref(false)
+
+const onPlaceSaved = () => {
+  if (props.feed && props.feed.place) {
+    props.feed.place.isSaved = true
+  }
+}
 
 // 로컬 좋아요 상태 (Optimistic UI용)
 const localLikedByMe = ref(props.feed.likedByMe ?? false)

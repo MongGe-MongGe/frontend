@@ -18,3 +18,8 @@ export const deleteGoodPlaceFromGroup = async (groupId: string, placeId: string)
   const response = await apiClient.delete(`/users/me/groups/${groupId}/good-places/${placeId}`)
   return response.data
 }
+
+export const getSavedGroupIds = async (placeId: string) => {
+  const response = await apiClient.get(`/users/me/places/${placeId}/groups`)
+  return response.data
+}

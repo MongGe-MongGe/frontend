@@ -42,16 +42,10 @@
             <div class="relative group flex items-center justify-center">
               <button
                 @click="openSaveModal"
-                class="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition"
+                class="p-2 rounded-full transition hover:bg-blue-50"
+                :class="selectedPlace.isSaved ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  ></path>
-                </svg>
+                <BookmarkIcon class="w-5 h-5" :class="{ 'fill-current': selectedPlace.isSaved }" />
               </button>
               <span
                 class="absolute -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none z-50"
@@ -286,7 +280,7 @@
       v-if="isSaveModalOpen"
       :place="selectedPlace"
       @close="isSaveModalOpen = false"
-      @saved="isSaveModalOpen = false"
+      @saved="checkOrCreatePlace(selectedPlace)"
     />
 
     <!-- Image Modal -->
@@ -336,6 +330,7 @@ import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAlert } from '@/composables/useAlert'
 import http from '@/api/http'
+import { Bookmark as BookmarkIcon } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const { showAlert } = useAlert()
@@ -406,7 +401,7 @@ const fetchPlaceImage = async (query: string) => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const checkOrCreatePlace = async (place: any) => {
   try {
-    await http.post('/api/places', {
+    const res = await http.post('/api/places', {
       id: place.id,
       name: place.title || place.place_name,
       x: place.lng?.toString() || place.x?.toString(),
@@ -414,6 +409,9 @@ const checkOrCreatePlace = async (place: any) => {
       roadAddressName: place.address || place.address_name,
       categoryName: place.category_name,
     })
+    if (selectedPlace.value && selectedPlace.value.id === place.id) {
+      selectedPlace.value.isSaved = res.data.isSaved
+    }
   } catch (error) {
     console.error('Failed to check/create place:', error)
   }
@@ -457,6 +455,16 @@ const openSaveModal = () => {
     return
   }
   isSaveModalOpen.value = true
+}
+
+const closeSaveModal = () => {
+  isSaveModalOpen.value = false
+}
+
+const onPlaceSaved = () => {
+  if (selectedPlace.value) {
+    selectedPlace.value.isSaved = true
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
