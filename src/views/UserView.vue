@@ -178,11 +178,12 @@
           <div
             v-for="group in groups"
             :key="group.id"
-            class="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm"
+            class="border border-gray-100 rounded-xl bg-white shadow-sm"
           >
             <div
               @click="!editingGroupId || editingGroupId !== group.id ? toggleGroup(group.id) : null"
               class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+              :class="{ 'rounded-xl': selectedGroupId !== group.id, 'rounded-t-xl': selectedGroupId === group.id }"
             >
               <div class="flex-1 mr-4">
                 <template v-if="editingGroupId === group.id">
@@ -203,6 +204,78 @@
                 </template>
               </div>
               <div class="flex items-center space-x-3">
+                <!-- Group Actions -->
+                <div
+                  v-if="selectedGroupId === group.id && isMyProfile && !group.defaultGroup"
+                  class="flex space-x-2"
+                  @click.stop
+                >
+                  <template v-if="editingGroupId === group.id">
+                    <Tooltip content="수정하기">
+                      <button
+                        @click.stop="handleEditGroupSave(group)"
+                        class="p-1.5 text-gray-400 hover:text-green-600 rounded bg-transparent hover:bg-green-50 transition-colors"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="취소하기">
+                      <button
+                        @click.stop="handleEditGroupCancel()"
+                        class="p-1.5 text-gray-400 hover:text-gray-900 rounded bg-transparent hover:bg-gray-100 transition-colors"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </Tooltip>
+                  </template>
+                  <template v-else>
+                    <Tooltip content="그룹 수정">
+                      <button
+                        @click.stop="handleEditGroupStart(group)"
+                        class="p-1.5 text-gray-400 hover:text-primary rounded bg-transparent hover:bg-pink-50 transition-colors"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="그룹 삭제">
+                      <button
+                        @click.stop="handleDeleteGroup(group.id)"
+                        class="p-1.5 text-gray-400 hover:text-red-600 rounded bg-transparent hover:bg-red-50 transition-colors"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </Tooltip>
+                  </template>
+                </div>
+
                 <svg
                   class="w-5 h-5 text-gray-400 transform transition-transform"
                   :class="{ 'rotate-180': selectedGroupId === group.id }"
@@ -220,79 +293,7 @@
               </div>
             </div>
 
-            <div v-if="selectedGroupId === group.id" class="border-t border-gray-100 bg-gray-50">
-              <!-- Group Actions -->
-              <div
-                v-if="isMyProfile && !group.defaultGroup"
-                class="flex justify-end items-center px-4 py-2 border-b border-gray-100 bg-white"
-              >
-                <div class="flex space-x-2">
-                  <template v-if="editingGroupId === group.id">
-                    <Tooltip content="수정하기">
-                      <button
-                        @click="handleEditGroupSave(group)"
-                        class="p-1.5 text-gray-500 hover:text-green-600 rounded bg-gray-50 hover:bg-green-50 transition-colors"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="취소하기">
-                      <button
-                        @click="handleEditGroupCancel()"
-                        class="p-1.5 text-gray-500 hover:text-gray-900 rounded bg-gray-50 hover:bg-gray-100 transition-colors"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </Tooltip>
-                  </template>
-                  <template v-else>
-                    <Tooltip content="그룹 수정">
-                      <button
-                        @click="handleEditGroupStart(group)"
-                        class="p-1.5 text-gray-500 hover:text-primary rounded bg-gray-50 hover:bg-pink-50 transition-colors"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                          />
-                        </svg>
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="그룹 삭제">
-                      <button
-                        @click="handleDeleteGroup(group.id)"
-                        class="p-1.5 text-red-400 hover:text-red-600 rounded bg-red-50 hover:bg-red-100 transition-colors"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </Tooltip>
-                  </template>
-                </div>
-              </div>
+            <div v-if="selectedGroupId === group.id" class="border-t border-gray-100 bg-gray-50 rounded-b-xl overflow-hidden">
 
               <div v-if="!groupPlaces[group.id]" class="p-4 flex justify-center">
                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
