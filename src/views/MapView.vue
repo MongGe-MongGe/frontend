@@ -7,20 +7,18 @@
       @update:filterMode="setFilterMode"
       @search="handleSearch"
       @select-place="handleSelectPlace"
+      @select-group="handleSelectGroup"
       @tab-change="handleTabChange"
     />
 
     <div class="flex-1 relative h-full w-full">
       <!-- Kakao Map -->
       <KakaoMap
+        ref="kakaoMapRef"
         :lat="mapCenter.lat"
         :lng="mapCenter.lng"
         :level="4"
-        :markers="
-          activeSidebarTab === 'search'
-            ? mapMarkers
-            : mapMarkers.filter((m) => selectedPlace?.id === m.id)
-        "
+        :markers="mapMarkers"
         :selected-id="selectedPlace?.id"
         @marker-click="handleMarkerClick"
         @center-changed="handleCenterChanged"
@@ -420,6 +418,9 @@ const { showAlert } = useAlert()
 const route = useRoute()
 const router = useRouter()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const kakaoMapRef = ref<any>(null)
+
 const mapCenter = ref({ lat: 37.5665, lng: 126.978 }) // 검색 및 최초 로드 시 설정할 맵 중심
 const currentViewCenter = ref({ lat: 37.5665, lng: 126.978 }) // 현재 사용자가 보고 있는 지도의 중심 좌표
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -640,6 +641,11 @@ const activeSidebarTab = ref<'search' | 'users'>('search')
 const handleTabChange = (tab: 'search' | 'users') => {
   activeSidebarTab.value = tab
   selectedPlace.value = null
+  if (tab === 'users') {
+    mapMarkers.value = []
+  } else {
+    handleSearch(currentKeyword.value)
+  }
 }
 
 const setFilterMode = (mode: 'all' | 'restaurant' | 'cafe') => {
@@ -739,6 +745,29 @@ const handleSearch = (keyword: string) => {
   if (filterMode.value === 'all' || filterMode.value === 'cafe') {
     for (let page = 1; page <= 3; page++) {
       ps.keywordSearch(keyword, callback, { ...searchOptions, category_group_code: 'CE7', page })
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleSelectGroup = (places: any[]) => {
+  const mappedPlaces = places.map((p) => ({
+    ...p,
+    lat: Number(p.lat || p.y),
+    lng: Number(p.lng || p.x),
+  }))
+  mapMarkers.value = mappedPlaces
+  selectedPlace.value = null
+
+  if (mappedPlaces.length > 0) {
+    // 마커가 여러 개일 경우 화면에 전부 보이도록 바운드 조절
+    if (kakaoMapRef.value && kakaoMapRef.value.fitBounds) {
+      kakaoMapRef.value.fitBounds(mappedPlaces)
+    } else {
+      mapCenter.value = {
+        lat: mappedPlaces[0].lat,
+        lng: mappedPlaces[0].lng,
+      }
     }
   }
 }

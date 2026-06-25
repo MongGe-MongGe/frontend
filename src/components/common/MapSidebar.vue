@@ -324,6 +324,8 @@ const emit = defineEmits<{
   (e: 'search', query: string): void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (e: 'select-place', place: any): void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (e: 'select-group', places: any[]): void
   (e: 'update:filterMode', mode: 'all' | 'restaurant' | 'cafe'): void
   (e: 'tab-change', tab: 'search' | 'users'): void
 }>()
@@ -457,6 +459,13 @@ const toggleGroupAccordion = async (group: any) => {
       isLoadingGroupPlaces.value[group.id] = false
     }
   }
+
+  // 그룹 선택 시 그룹 내 장소들을 마커 포맷으로 변환하여 부모 컴포넌트에 전달
+  emit(
+    'select-group',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (groupPlacesCache.value[group.id] || []).map((p: any) => mapPlaceToKakaoFormat(p.place || p)),
+  )
 }
 
 // Convert backend place format to kakao map format

@@ -125,4 +125,18 @@ watch([() => props.lat, () => props.lng], ([newLat, newLng]) => {
     map.panTo(moveLatLon)
   }
 })
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fitBounds = (markersData: any[]) => {
+  if (!map || !markersData || markersData.length === 0) return
+  const bounds = new window.kakao.maps.LatLngBounds()
+  markersData.forEach((m) => {
+    bounds.extend(new window.kakao.maps.LatLng(m.lat, m.lng))
+  })
+  map.setBounds(bounds)
+}
+
+defineExpose({
+  fitBounds,
+})
 </script>
