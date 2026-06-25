@@ -63,11 +63,21 @@
 import PageContainer from '@/components/common/PageContainer.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { useConfirm } from '@/composables/useConfirm'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const { confirm } = useConfirm()
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  const ok = await confirm({
+    title: '로그아웃',
+    message: '정말 로그아웃 하시겠습니까?',
+    confirmText: '로그아웃',
+    danger: true,
+  })
+  if (!ok) return
+
   authStore.logout()
   router.push('/login')
 }
