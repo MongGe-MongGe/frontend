@@ -270,7 +270,7 @@
                       {{ review.author?.nickname || review.userNickname }}
                     </p>
                     <p class="text-xs text-gray-500">
-                      {{ review.author?.handle ? '@' + review.author.handle : '' }}
+                      {{ review.author?.handle ? review.author.handle : '' }}
                     </p>
                   </div>
                 </div>
