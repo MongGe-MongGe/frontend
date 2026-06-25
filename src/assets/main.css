@@ -4,3 +4,17 @@
 @theme {
   --color-primary: #00aeee;
 }
+
+@keyframes particle {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(var(--scale));
+    opacity: 0;
+  }
+}
+.animate-particle {
+  animation: particle 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}

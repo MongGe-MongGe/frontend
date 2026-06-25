@@ -42,13 +42,22 @@
               v-else
               @click="toggleFollow"
               :class="[
-                'px-4 py-1.5 text-xs font-bold rounded-full transition',
+                'relative px-4 py-1.5 text-xs font-bold rounded-full transition overflow-visible',
                 isFollowing
                   ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   : 'bg-blue-500 text-white hover:bg-blue-600',
               ]"
             >
               {{ isFollowing ? '팔로잉' : '팔로우' }}
+
+              <div
+                v-for="p in pawParticles"
+                :key="p.id"
+                class="absolute pointer-events-none text-pink-400 flex items-center justify-center animate-particle top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                :style="`--tx: ${p.x}px; --ty: ${p.y}px; --rot: ${p.rot}deg; --scale: ${p.scale};`"
+              >
+                <PawPrint class="w-4 h-4 fill-current" />
+              </div>
             </button>
 
             <!-- Kebab Dropdown -->
@@ -263,9 +272,11 @@ import {
   Heart,
   MessageCircle,
   Bookmark,
+  PawPrint,
 } from 'lucide-vue-next'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
 import CommentBox from '@/components/review/CommentBox.vue'
+import { usePawParticles } from '@/composables/usePawParticles'
 
 const props = defineProps<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -285,6 +296,7 @@ const isDropdownOpen = ref(false)
 const isSaveModalOpen = ref(false)
 const isCommentOpen = ref(false)
 const isLiking = ref(false)
+const { pawParticles, spawnPawParticles } = usePawParticles()
 
 const updateCommentCount = (c: number) => {
   if (props.feed) {
@@ -440,6 +452,10 @@ const toggleFollow = async () => {
   const prevFollowing = isFollowing.value
   isFollowing.value = !prevFollowing
   isTogglingFollow.value = true
+
+  if (!prevFollowing) {
+    spawnPawParticles()
+  }
 
   try {
     if (prevFollowing) {

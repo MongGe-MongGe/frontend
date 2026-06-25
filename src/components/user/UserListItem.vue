@@ -22,13 +22,22 @@
       v-if="!isMyProfile"
       @click.stop="toggleFollow"
       :class="[
-        'px-4 py-1.5 rounded-lg text-sm font-bold transition min-w-[80px]',
+        'relative px-4 py-1.5 rounded-lg text-sm font-bold transition min-w-[80px] overflow-visible',
         localIsFollowing
           ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
           : 'bg-blue-600 text-white hover:bg-blue-700',
       ]"
     >
       {{ localIsFollowing ? '팔로잉' : user.isFollower ? '맞팔로우' : '팔로우' }}
+
+      <div
+        v-for="p in pawParticles"
+        :key="p.id"
+        class="absolute pointer-events-none text-pink-400 flex items-center justify-center animate-particle top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        :style="`--tx: ${p.x}px; --ty: ${p.y}px; --rot: ${p.rot}deg; --scale: ${p.scale};`"
+      >
+        <PawPrint class="w-4 h-4 fill-current" />
+      </div>
     </button>
   </div>
 </template>
@@ -39,6 +48,8 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { followUser, unfollowUser } from '@/api/user'
 import { useAlert } from '@/composables/useAlert'
+import { PawPrint } from 'lucide-vue-next'
+import { usePawParticles } from '@/composables/usePawParticles'
 
 const props = defineProps<{
   user: {
@@ -54,6 +65,7 @@ const props = defineProps<{
 const router = useRouter()
 const authStore = useAuthStore()
 const { showAlert } = useAlert()
+const { pawParticles, spawnPawParticles } = usePawParticles()
 
 const localIsFollowing = ref(props.user.isFollowing)
 
@@ -77,6 +89,10 @@ const toggleFollow = async () => {
   const prevFollowing = localIsFollowing.value
   localIsFollowing.value = !prevFollowing
   isTogglingFollow.value = true
+
+  if (!prevFollowing) {
+    spawnPawParticles()
+  }
 
   try {
     if (prevFollowing) {

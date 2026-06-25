@@ -27,13 +27,22 @@
           v-else-if="user"
           @click="toggleFollow"
           :class="[
-            'px-4 py-1.5 rounded-full font-bold text-xs transition',
+            'relative px-4 py-1.5 rounded-full font-bold text-xs transition overflow-visible',
             user?.isFollowing
               ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               : 'bg-blue-600 text-white hover:bg-blue-700',
           ]"
         >
           {{ user?.isFollowing ? '팔로잉' : user?.isFollower ? '맞팔로우' : '팔로우' }}
+
+          <div
+            v-for="p in pawParticles"
+            :key="p.id"
+            class="absolute pointer-events-none text-pink-400 flex items-center justify-center animate-particle top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            :style="`--tx: ${p.x}px; --ty: ${p.y}px; --rot: ${p.rot}deg; --scale: ${p.scale};`"
+          >
+            <PawPrint class="w-4 h-4 fill-current" />
+          </div>
         </button>
       </header>
 
@@ -183,7 +192,10 @@
             <div
               @click="!editingGroupId || editingGroupId !== group.id ? toggleGroup(group.id) : null"
               class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-              :class="{ 'rounded-xl': selectedGroupId !== group.id, 'rounded-t-xl': selectedGroupId === group.id }"
+              :class="{
+                'rounded-xl': selectedGroupId !== group.id,
+                'rounded-t-xl': selectedGroupId === group.id,
+              }"
             >
               <div class="flex-1 mr-4">
                 <template v-if="editingGroupId === group.id">
@@ -293,8 +305,10 @@
               </div>
             </div>
 
-            <div v-if="selectedGroupId === group.id" class="border-t border-gray-100 bg-gray-50 rounded-b-xl overflow-hidden">
-
+            <div
+              v-if="selectedGroupId === group.id"
+              class="border-t border-gray-100 bg-gray-50 rounded-b-xl overflow-hidden"
+            >
               <div v-if="!groupPlaces[group.id]" class="p-4 flex justify-center">
                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               </div>
@@ -371,6 +385,8 @@ import PageContainer from '@/components/common/PageContainer.vue'
 import Tooltip from '@/components/common/Tooltip.vue'
 import FollowListModal from '@/components/user/FollowListModal.vue'
 import ReviewWriteWidget from '@/components/review/ReviewWriteWidget.vue'
+import { PawPrint } from 'lucide-vue-next'
+import { usePawParticles } from '@/composables/usePawParticles'
 
 const route = useRoute()
 const router = useRouter()
@@ -378,6 +394,7 @@ const authStore = useAuthStore()
 const feedStore = useFeedStore()
 const { showAlert } = useAlert()
 const { confirm } = useConfirm()
+const { pawParticles, spawnPawParticles } = usePawParticles()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const writeWidget = ref<any>(null)
@@ -520,9 +537,8 @@ const handleDeletePlace = async (groupId: string, placeId: string) => {
   try {
     await deleteGoodPlaceFromGroup(groupId, placeId)
     if (groupPlaces.value[groupId]) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       groupPlaces.value[groupId] = groupPlaces.value[groupId].filter(
-        (p: any) => p.place.id !== placeId,
+        (p: { place: { id: string } }) => p.place.id !== placeId,
       )
     }
     const group = groups.value.find((g) => g.id === groupId)
@@ -591,6 +607,10 @@ const toggleFollow = async () => {
   user.value.isFollowing = !prevFollowing
   user.value.followerCount = prevFollowing ? prevCount - 1 : prevCount + 1
   isTogglingFollow.value = true
+
+  if (!prevFollowing) {
+    spawnPawParticles()
+  }
 
   try {
     if (prevFollowing) {
