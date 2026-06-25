@@ -1,6 +1,8 @@
 <template>
   <PageContainer>
-    <div class="w-full max-w-md mx-auto border-x border-gray-100 bg-white min-h-screen relative flex flex-col">
+    <div
+      class="w-full max-w-md mx-auto border-x border-gray-100 bg-white min-h-screen relative flex flex-col"
+    >
       <header
         class="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10"
       >
@@ -39,11 +41,11 @@
         <div class="flex items-center space-x-6 mb-6">
           <img
             :src="user?.profileImage || '/default_profile_image.png'"
-            @error="(e) => (e.target as HTMLImageElement).src = '/default_profile_image.png'"
+            @error="(e) => ((e.target as HTMLImageElement).src = '/default_profile_image.png')"
             class="w-20 h-20 bg-gray-200 rounded-full shrink-0 object-cover"
             alt="프로필 이미지"
           />
-          <div class="flex-1 flex justify-between text-center">
+          <div class="flex-1 flex justify-evenly text-center">
             <div>
               <div class="font-bold text-lg">{{ reviews.length }}</div>
               <div class="text-xs text-gray-500">리뷰</div>
@@ -70,23 +72,29 @@
             {{ user?.bio || '자기소개가 없습니다.' }}
           </p>
         </div>
-
-
       </div>
 
       <!-- Tabs -->
       <div class="flex border-t border-gray-200">
-        <button 
+        <button
           @click="activeTab = 'reviews'"
           class="flex-1 py-3 text-center transition-colors font-bold"
-          :class="activeTab === 'reviews' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+          :class="
+            activeTab === 'reviews'
+              ? 'border-b-2 border-gray-900 text-gray-900'
+              : 'text-gray-500 hover:text-gray-700'
+          "
         >
           리뷰 피드
         </button>
-        <button 
+        <button
           @click="activeTab = 'groups'"
           class="flex-1 py-3 text-center transition-colors font-bold"
-          :class="activeTab === 'groups' ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-700'"
+          :class="
+            activeTab === 'groups'
+              ? 'border-b-2 border-gray-900 text-gray-900'
+              : 'text-gray-500 hover:text-gray-700'
+          "
         >
           맛집 그룹
         </button>
@@ -112,7 +120,12 @@
         <!-- Empty State -->
         <div v-else class="flex flex-col items-center justify-center py-24 text-center px-4">
           <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              class="w-10 h-10 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -155,20 +168,27 @@
         <div v-if="isGroupsLoading" class="flex justify-center p-8">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-        <div v-else-if="groups.length === 0" class="flex flex-col items-center justify-center py-24 text-center px-4">
+        <div
+          v-else-if="groups.length === 0"
+          class="flex flex-col items-center justify-center py-24 text-center px-4"
+        >
           <h3 class="font-bold text-gray-900 text-lg mb-2">아직 생성된 맛집 그룹이 없습니다</h3>
         </div>
         <div v-else class="p-4 space-y-4 pb-20">
-          <div v-for="group in groups" :key="group.id" class="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm">
-            <div 
-              @click="!editingGroupId || editingGroupId !== group.id ? toggleGroup(group.id) : null" 
+          <div
+            v-for="group in groups"
+            :key="group.id"
+            class="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm"
+          >
+            <div
+              @click="!editingGroupId || editingGroupId !== group.id ? toggleGroup(group.id) : null"
               class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <div class="flex-1 mr-4">
                 <template v-if="editingGroupId === group.id">
-                  <input 
-                    type="text" 
-                    v-model="editingGroupName" 
+                  <input
+                    type="text"
+                    v-model="editingGroupName"
                     class="w-full font-bold text-gray-900 border-b-2 border-primary focus:outline-none bg-transparent"
                     @click.stop
                     @keyup.enter="handleEditGroupSave(group)"
@@ -183,48 +203,90 @@
                 </template>
               </div>
               <div class="flex items-center space-x-3">
-                <svg 
-                  class="w-5 h-5 text-gray-400 transform transition-transform" 
-                  :class="{'rotate-180': selectedGroupId === group.id}"
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                <svg
+                  class="w-5 h-5 text-gray-400 transform transition-transform"
+                  :class="{ 'rotate-180': selectedGroupId === group.id }"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
-            
+
             <div v-if="selectedGroupId === group.id" class="border-t border-gray-100 bg-gray-50">
               <!-- Group Actions -->
-              <div v-if="isMyProfile && !group.defaultGroup" class="flex justify-end items-center px-4 py-2 border-b border-gray-100 bg-white">
+              <div
+                v-if="isMyProfile && !group.defaultGroup"
+                class="flex justify-end items-center px-4 py-2 border-b border-gray-100 bg-white"
+              >
                 <div class="flex space-x-2">
                   <template v-if="editingGroupId === group.id">
                     <Tooltip content="수정하기">
-                      <button @click="handleEditGroupSave(group)" class="p-1.5 text-gray-500 hover:text-green-600 rounded bg-gray-50 hover:bg-green-50 transition-colors">
+                      <button
+                        @click="handleEditGroupSave(group)"
+                        class="p-1.5 text-gray-500 hover:text-green-600 rounded bg-gray-50 hover:bg-green-50 transition-colors"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       </button>
                     </Tooltip>
                     <Tooltip content="취소하기">
-                      <button @click="handleEditGroupCancel()" class="p-1.5 text-gray-500 hover:text-gray-900 rounded bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <button
+                        @click="handleEditGroupCancel()"
+                        class="p-1.5 text-gray-500 hover:text-gray-900 rounded bg-gray-50 hover:bg-gray-100 transition-colors"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </button>
                     </Tooltip>
                   </template>
                   <template v-else>
                     <Tooltip content="그룹 수정">
-                      <button @click="handleEditGroupStart(group)" class="p-1.5 text-gray-500 hover:text-primary rounded bg-gray-50 hover:bg-pink-50 transition-colors">
+                      <button
+                        @click="handleEditGroupStart(group)"
+                        class="p-1.5 text-gray-500 hover:text-primary rounded bg-gray-50 hover:bg-pink-50 transition-colors"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
                         </svg>
                       </button>
                     </Tooltip>
                     <Tooltip content="그룹 삭제">
-                      <button @click="handleDeleteGroup(group.id)" class="p-1.5 text-red-400 hover:text-red-600 rounded bg-red-50 hover:bg-red-100 transition-colors">
+                      <button
+                        @click="handleDeleteGroup(group.id)"
+                        class="p-1.5 text-red-400 hover:text-red-600 rounded bg-red-50 hover:bg-red-100 transition-colors"
+                      >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
                         </svg>
                       </button>
                     </Tooltip>
@@ -235,24 +297,42 @@
               <div v-if="!groupPlaces[group.id]" class="p-4 flex justify-center">
                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               </div>
-              <div v-else-if="groupPlaces[group.id]?.length === 0" class="p-6 text-center text-sm text-gray-500">
+              <div
+                v-else-if="groupPlaces[group.id]?.length === 0"
+                class="p-6 text-center text-sm text-gray-500"
+              >
                 이 그룹에 저장된 장소가 없습니다.
               </div>
               <div v-else class="divide-y divide-gray-100">
-                <div v-for="placeInfo in groupPlaces[group.id]" :key="placeInfo.id" class="p-4 flex items-center justify-between bg-white group/item">
+                <div
+                  v-for="placeInfo in groupPlaces[group.id]"
+                  :key="placeInfo.id"
+                  class="p-4 flex items-center justify-between bg-white group/item"
+                >
                   <div class="flex flex-col">
                     <span class="font-bold text-gray-900 text-sm">{{ placeInfo.place.name }}</span>
-                    <span class="text-xs text-gray-500 mt-1">{{ placeInfo.place.roadAddressName || placeInfo.place.addressName || '주소 정보 없음' }}</span>
-                    <span class="text-xs text-primary mt-1">{{ placeInfo.place.categoryName }}</span>
+                    <span class="text-xs text-gray-500 mt-1">{{
+                      placeInfo.place.roadAddressName ||
+                      placeInfo.place.addressName ||
+                      '주소 정보 없음'
+                    }}</span>
+                    <span class="text-xs text-primary mt-1">{{
+                      placeInfo.place.categoryName
+                    }}</span>
                   </div>
-                  <button 
+                  <button
                     v-if="isMyProfile"
-                    @click="handleDeletePlace(group.id, placeInfo.place.id)" 
+                    @click="handleDeletePlace(group.id, placeInfo.place.id)"
                     class="text-gray-300 hover:text-red-500 p-2 transition-colors opacity-0 group-hover/item:opacity-100"
                     title="저장 취소"
                   >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -261,16 +341,16 @@
           </div>
         </div>
       </template>
-      
+
       <!-- Floating Review Write Button -->
       <ReviewWriteWidget v-if="isMyProfile" ref="writeWidget" @success="onReviewCreated" />
 
       <!-- Follow List Modal -->
-      <FollowListModal 
-        v-if="isModalOpen && user" 
-        :user-id="user.id" 
-        :type="modalType" 
-        @close="closeFollowModal" 
+      <FollowListModal
+        v-if="isModalOpen && user"
+        :user-id="user.id"
+        :type="modalType"
+        @close="closeFollowModal"
       />
     </div>
   </PageContainer>
@@ -298,6 +378,7 @@ const feedStore = useFeedStore()
 const { showAlert } = useAlert()
 const { confirm } = useConfirm()
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const writeWidget = ref<any>(null)
 
 interface UserProfile {
@@ -316,8 +397,10 @@ const user = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 
 const activeTab = ref<'reviews' | 'groups'>('reviews')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const groups = ref<any[]>([])
 const selectedGroupId = ref<string | null>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const groupPlaces = ref<Record<string, any[]>>({})
 const isGroupsLoading = ref(false)
 
@@ -326,7 +409,7 @@ const isCreatingGroup = ref(false)
 
 const handleCreateGroup = async () => {
   if (!newGroupName.value.trim() || isCreatingGroup.value) return
-  
+
   try {
     isCreatingGroup.value = true
     await createGroup(newGroupName.value.trim())
@@ -372,6 +455,7 @@ const toggleGroup = async (groupId: string) => {
 const editingGroupId = ref<string | null>(null)
 const editingGroupName = ref<string>('')
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleEditGroupStart = (group: any) => {
   editingGroupId.value = group.id
   editingGroupName.value = group.name
@@ -382,6 +466,7 @@ const handleEditGroupCancel = () => {
   editingGroupName.value = ''
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleEditGroupSave = async (group: any) => {
   const newName = editingGroupName.value.trim()
   if (!newName || newName === group.name) {
@@ -408,10 +493,10 @@ const handleDeleteGroup = async (groupId: string) => {
     danger: true,
   })
   if (!ok) return
-  
+
   try {
     await deleteGroup(groupId)
-    groups.value = groups.value.filter(g => g.id !== groupId)
+    groups.value = groups.value.filter((g) => g.id !== groupId)
     if (selectedGroupId.value === groupId) {
       selectedGroupId.value = null
     }
@@ -430,13 +515,16 @@ const handleDeletePlace = async (groupId: string, placeId: string) => {
     danger: true,
   })
   if (!ok) return
-  
+
   try {
     await deleteGoodPlaceFromGroup(groupId, placeId)
     if (groupPlaces.value[groupId]) {
-      groupPlaces.value[groupId] = groupPlaces.value[groupId].filter((p: any) => p.place.id !== placeId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      groupPlaces.value[groupId] = groupPlaces.value[groupId].filter(
+        (p: any) => p.place.id !== placeId,
+      )
     }
-    const group = groups.value.find(g => g.id === groupId)
+    const group = groups.value.find((g) => g.id === groupId)
     if (group) {
       group.goodPlaceCount--
     }
@@ -515,10 +603,11 @@ const loadProfile = async () => {
     const rawHandle = route.params.handle as string
     const handle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`
     user.value = await getUserProfile(handle)
-    
+
     if (user.value) {
       await feedStore.loadUserReviews(user.value.id, true)
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('Failed to load user profile:', error)
     user.value = null
