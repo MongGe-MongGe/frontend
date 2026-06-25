@@ -142,6 +142,15 @@
           </button>
         </div>
 
+        <!-- Place Review Summary -->
+        <div
+          v-if="feed.place?.reviewSummary?.summary"
+          class="px-4 py-2 bg-blue-50/50 text-sm text-gray-700 border-b border-gray-100"
+        >
+          <span class="font-bold text-blue-600 mr-1">✨ AI 요약:</span>
+          {{ feed.place.reviewSummary.summary }}
+        </div>
+
         <!-- Review Content -->
         <div class="px-4 py-3 text-sm">
           <span class="font-bold text-gray-900 mr-2">{{ feed.author.nickname }}</span>

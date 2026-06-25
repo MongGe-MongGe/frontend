@@ -161,6 +161,86 @@
           <!-- Reviews Area -->
           <div>
             <h3 class="text-lg font-bold text-gray-900 mb-3">리뷰</h3>
+
+            <!-- AI Review Summary -->
+            <div
+              v-if="selectedPlace?.reviewSummary?.summary"
+              class="mb-4 p-3 bg-blue-50/50 border border-blue-100 rounded-lg text-sm text-gray-700 relative group"
+            >
+              <span class="font-bold text-blue-600 mr-1">✨ AI 요약:</span>
+              {{ selectedPlace.reviewSummary.summary }}
+              <button
+                @click="generateSummary"
+                class="absolute top-2 right-2 text-blue-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition"
+                title="요약 다시 생성"
+                :disabled="isGeneratingSummary"
+              >
+                <svg
+                  v-if="!isGeneratingSummary"
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  class="w-4 h-4 animate-spin"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div
+              v-else-if="!isLoadingReviews && placeReviews.length > 0"
+              class="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 flex flex-col items-center justify-center space-y-3"
+            >
+              <p class="text-gray-500 text-xs">아직 작성된 리뷰 요약이 없습니다.</p>
+              <button
+                @click="generateSummary"
+                class="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition flex items-center space-x-2"
+                :disabled="isGeneratingSummary"
+              >
+                <svg
+                  v-if="!isGeneratingSummary"
+                  class="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M11 2L9 8H3L8 12L6 18L11 14L16 18L14 12L19 8H13L11 2Z" />
+                </svg>
+                <svg
+                  v-else
+                  class="w-4 h-4 animate-spin"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <span>{{ isGeneratingSummary ? '생성 중...' : '리뷰 요약 생성하기' }}</span>
+              </button>
+            </div>
+
             <div v-if="isLoadingReviews" class="text-sm text-gray-500 text-center py-4">
               리뷰를 불러오는 중...
             </div>
@@ -416,6 +496,7 @@ const checkOrCreatePlace = async (place: any) => {
     })
     if (selectedPlace.value && selectedPlace.value.id === place.id) {
       selectedPlace.value.isSaved = res.data.isSaved
+      selectedPlace.value.reviewSummary = res.data.reviewSummary
     }
   } catch (error) {
     console.error('Failed to check/create place:', error)
@@ -432,6 +513,24 @@ const fetchPlaceReviews = async (placeId: string) => {
     console.error('Failed to fetch reviews:', error)
   } finally {
     isLoadingReviews.value = false
+  }
+}
+
+const isGeneratingSummary = ref(false)
+
+const generateSummary = async () => {
+  if (!selectedPlace.value) return
+  isGeneratingSummary.value = true
+  try {
+    const res = await http.put(`/api/places/summary/${selectedPlace.value.id}`)
+    if (selectedPlace.value && selectedPlace.value.id === res.data.placeId) {
+      selectedPlace.value.reviewSummary = res.data
+    }
+  } catch (error) {
+    console.error('Failed to generate summary:', error)
+    showAlert('리뷰 요약 생성에 실패했습니다.', 'error')
+  } finally {
+    isGeneratingSummary.value = false
   }
 }
 
