@@ -428,22 +428,31 @@ const handleDelete = async () => {
   }
 }
 
+const isTogglingFollow = ref(false)
+
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
     showAlert('로그인이 필요합니다.', 'info')
     return
   }
+  if (isTogglingFollow.value) return
+
+  const prevFollowing = isFollowing.value
+  isFollowing.value = !prevFollowing
+  isTogglingFollow.value = true
+
   try {
-    if (isFollowing.value) {
+    if (prevFollowing) {
       await unfollowUser(props.feed.author.id)
-      isFollowing.value = false
     } else {
       await followUser(props.feed.author.id)
-      isFollowing.value = true
     }
   } catch (error) {
+    isFollowing.value = prevFollowing
     console.error('Follow toggle error:', error)
     showAlert('팔로우 상태를 변경할 수 없습니다.', 'error')
+  } finally {
+    isTogglingFollow.value = false
   }
 }
 

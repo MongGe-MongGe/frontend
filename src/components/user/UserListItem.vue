@@ -65,23 +65,31 @@ const goToProfile = () => {
   router.push(`/users/${props.user.handle.replace('@', '')}`)
 }
 
+const isTogglingFollow = ref(false)
+
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
     showAlert('로그인이 필요합니다.', 'warning')
     return
   }
+  if (isTogglingFollow.value) return
+
+  const prevFollowing = localIsFollowing.value
+  localIsFollowing.value = !prevFollowing
+  isTogglingFollow.value = true
 
   try {
-    if (localIsFollowing.value) {
+    if (prevFollowing) {
       await unfollowUser(props.user.id)
-      localIsFollowing.value = false
     } else {
       await followUser(props.user.id)
-      localIsFollowing.value = true
     }
   } catch (error) {
+    localIsFollowing.value = prevFollowing
     console.error('팔로우 전환 실패:', error)
     showAlert('팔로우 상태를 변경할 수 없습니다.', 'error')
+  } finally {
+    isTogglingFollow.value = false
   }
 }
 </script>

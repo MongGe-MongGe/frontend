@@ -574,6 +574,8 @@ const closeFollowModal = () => {
   router.push({ query })
 }
 
+const isTogglingFollow = ref(false)
+
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
     showAlert('로그인이 필요합니다.', 'info')
@@ -581,20 +583,28 @@ const toggleFollow = async () => {
   }
 
   if (!user.value) return
+  if (isTogglingFollow.value) return
+
+  const prevFollowing = user.value.isFollowing
+  const prevCount = user.value.followerCount
+
+  user.value.isFollowing = !prevFollowing
+  user.value.followerCount = prevFollowing ? prevCount - 1 : prevCount + 1
+  isTogglingFollow.value = true
 
   try {
-    if (user.value.isFollowing) {
+    if (prevFollowing) {
       await unfollowUser(user.value.id)
-      user.value.isFollowing = false
-      user.value.followerCount--
     } else {
       await followUser(user.value.id)
-      user.value.isFollowing = true
-      user.value.followerCount++
     }
   } catch (error) {
+    user.value.isFollowing = prevFollowing
+    user.value.followerCount = prevCount
     console.error('Follow toggle error:', error)
     showAlert('팔로우 상태를 변경할 수 없습니다.', 'error')
+  } finally {
+    isTogglingFollow.value = false
   }
 }
 
