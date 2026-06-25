@@ -43,7 +43,9 @@
               <button
                 @click="openSaveModal"
                 class="p-2 rounded-full transition hover:bg-blue-50"
-                :class="selectedPlace.isSaved ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'"
+                :class="
+                  selectedPlace.isSaved ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'
+                "
               >
                 <BookmarkIcon class="w-5 h-5" :class="{ 'fill-current': selectedPlace.isSaved }" />
               </button>
@@ -324,6 +326,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import KakaoMap from '@/components/KakaoMap.vue'
 import MapSidebar from '@/components/common/MapSidebar.vue'
 import SavePlaceModal from '@/components/place/SavePlaceModal.vue'
@@ -334,6 +337,8 @@ import { Bookmark as BookmarkIcon } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const { showAlert } = useAlert()
+const route = useRoute()
+const router = useRouter()
 
 const mapCenter = ref({ lat: 37.5665, lng: 126.978 }) // 검색 및 최초 로드 시 설정할 맵 중심
 const currentViewCenter = ref({ lat: 37.5665, lng: 126.978 }) // 현재 사용자가 보고 있는 지도의 중심 좌표
@@ -457,21 +462,35 @@ const openSaveModal = () => {
   isSaveModalOpen.value = true
 }
 
-const closeSaveModal = () => {
-  isSaveModalOpen.value = false
-}
-
-const onPlaceSaved = () => {
-  if (selectedPlace.value) {
-    selectedPlace.value.isSaved = true
-  }
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ps: any = null
 
 onMounted(() => {
-  if (navigator.geolocation) {
+  if (route.query.placeId && route.query.x && route.query.y) {
+    const passedPlace = {
+      id: route.query.placeId as string,
+      title: route.query.name as string,
+      place_name: route.query.name as string,
+      x: route.query.x as string,
+      y: route.query.y as string,
+      lng: parseFloat(route.query.x as string),
+      lat: parseFloat(route.query.y as string),
+      address: route.query.address as string,
+      roadAddressName: route.query.address as string,
+      category_name: route.query.category as string,
+      categoryName: route.query.category as string,
+      isSaved: route.query.isSaved === 'true',
+    }
+
+    const center = { lat: passedPlace.lat, lng: passedPlace.lng }
+    mapCenter.value = center
+    currentViewCenter.value = center
+    mapMarkers.value = [passedPlace]
+    selectedPlace.value = passedPlace
+
+    router.replace({ path: '/map' })
+    initSearch(true)
+  } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const center = {
@@ -480,26 +499,28 @@ onMounted(() => {
         }
         mapCenter.value = center
         currentViewCenter.value = center
-        initSearch()
+        initSearch(false)
       },
       (error) => {
         console.warn('Geolocation error:', error.message)
-        initSearch() // 실패 시 기본 좌표로 검색
+        initSearch(false) // 실패 시 기본 좌표로 검색
       },
     )
   } else {
-    initSearch() // 미지원 시 기본 좌표로 검색
+    initSearch(false) // 미지원 시 기본 좌표로 검색
   }
 })
 
-const initSearch = () => {
+const initSearch = (skipSearch = false) => {
   if (window.kakao && window.kakao.maps) {
     window.kakao.maps.load(() => {
-      handleSearch('맛집')
+      if (!skipSearch) {
+        handleSearch('맛집')
+      }
     })
   } else {
     // 스크립트가 아직 로드되지 않았다면 약간 지연 후 재시도
-    setTimeout(initSearch, 500)
+    setTimeout(() => initSearch(skipSearch), 500)
   }
 }
 
