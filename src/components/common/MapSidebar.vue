@@ -177,6 +177,17 @@
 
     <!-- Users Tab Content -->
     <template v-else-if="activeTab === 'users'">
+      <div class="flex flex-col px-4 pt-4 pb-3 border-b border-gray-100 shrink-0 bg-white">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold text-gray-800">내 그룹만 보기</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" v-model="showMyGroupsOnly" class="sr-only peer" />
+            <div
+              class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"
+            ></div>
+          </label>
+        </div>
+      </div>
       <div class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3 bg-gray-50">
         <div v-if="isLoadingGroups" class="flex justify-center py-10">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -270,7 +281,7 @@
       <!-- Groups Pagination -->
       <div
         class="flex justify-center items-center space-x-4 py-3 px-4 border-t border-gray-200 bg-white shrink-0"
-        v-if="userGroups.length > 0 && totalGroupPages > 1"
+        v-if="filteredUserGroups.length > 0 && totalGroupPages > 1"
       >
         <button
           @click="prevGroupPage"
@@ -393,6 +404,13 @@ const isLoadingGroups = ref(false)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const userGroups = ref<any[]>([])
 
+const showMyGroupsOnly = ref(false)
+
+const filteredUserGroups = computed(() => {
+  if (!showMyGroupsOnly.value) return userGroups.value
+  return userGroups.value.filter((group) => group.user?.id === authStore.user?.id)
+})
+
 const loadUserGroups = async () => {
   if (userGroups.value.length > 0 || isLoadingGroups.value) return
   if (!authStore.user?.id) return
@@ -417,12 +435,16 @@ const loadUserGroups = async () => {
 const currentGroupPage = ref(1)
 const groupsPerPage = 15
 
-const totalGroupPages = computed(() => Math.ceil(userGroups.value.length / groupsPerPage))
+const totalGroupPages = computed(() => Math.ceil(filteredUserGroups.value.length / groupsPerPage))
 
 const paginatedUserGroups = computed(() => {
   const start = (currentGroupPage.value - 1) * groupsPerPage
   const end = start + groupsPerPage
-  return userGroups.value.slice(start, end)
+  return filteredUserGroups.value.slice(start, end)
+})
+
+watch(showMyGroupsOnly, () => {
+  currentGroupPage.value = 1
 })
 
 const nextGroupPage = () => {
