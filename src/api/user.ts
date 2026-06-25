@@ -34,7 +34,9 @@ export const getUserProfile = async (handle: string) => {
 }
 
 export const searchUsers = async (keyword: string, limit: number = 20, offset: number = 0) => {
-  const response = await apiClient.get(`/users?keyword=${encodeURIComponent(keyword)}&limit=${limit}&offset=${offset}`)
+  const response = await apiClient.get(
+    `/users?keyword=${encodeURIComponent(keyword)}&limit=${limit}&offset=${offset}`,
+  )
   return response.data // List of UserProfileResponse
 }
 
@@ -55,5 +57,10 @@ export const followUser = async (userId: string) => {
 
 export const unfollowUser = async (userId: string) => {
   const response = await apiClient.delete(`/users/follow/${encodeURIComponent(userId)}`)
+  return response.data
+}
+
+export const updateUserRole = async (userId: string, role: 'USER' | 'ADMIN') => {
+  const response = await apiClient.patch(`/users/${userId}/role?role=${role}`)
   return response.data
 }
